@@ -1,0 +1,19 @@
+Using this mui template to develop cms react project:
+https://github.com/themesberg/volt-react-dashboard#documentation
+
+Install yarn as well.
+Search install yarn, then download installer, then install it.
+Then cmd, c-users-administrator(default): npm install --global yarn
+To check yarn version: yarn --version
+
+follow documentation from above GitHub link.
+
+git clone https://github.com/themesberg/volt-react-dashboard.git
+code .
+cd .\volt-react-dashboard\
+
+yarn install
+
+Did the following to no longer get the error: This site can’t be reached localhost refused to connect.
+yarn add react-scripts@latest
+yarn start

@@ -1,0 +1,4 @@
+To run application:
+
+npm run dev
+o + Enter
