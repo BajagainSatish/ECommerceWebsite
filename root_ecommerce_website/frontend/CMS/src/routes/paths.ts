@@ -7,10 +7,9 @@ export const rootPaths = {
 
 export default {
   dashboard: `/${rootPaths.pagesRoot}/dashboard`,
-  features: `/${rootPaths.pagesRoot}/features`,
-  users: `/${rootPaths.pagesRoot}/users`,
-  pricing: `/${rootPaths.pagesRoot}/pricing`,
-  integrations: `/${rootPaths.pagesRoot}/integrations`,
+  productRoot: `/${rootPaths.pagesRoot}/product`,
+  brandRoot: `/${rootPaths.pagesRoot}/brand`,
+  categoryRoot: `/${rootPaths.pagesRoot}/category`,
   settings: `/${rootPaths.pagesRoot}/settings`,
   templatePages: `/${rootPaths.pagesRoot}/template-pages`,
   accountSettings: `/${rootPaths.pagesRoot}/account-settings`,

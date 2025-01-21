@@ -27,64 +27,74 @@ const sitemap: MenuItem[] = [
     active: true,
   },
   {
-    id: 'features',
-    subheader: 'Features',
-    path: '#!',
-    icon: 'mingcute:star-fill',
-  },
-  {
-    id: 'users',
-    subheader: 'Users',
-    path: '#!',
-    icon: 'mingcute:user-2-fill',
-  },
-  {
-    id: 'pricing',
-    subheader: 'Pricing',
-    path: '#!',
-    icon: 'mingcute:currency-dollar-2-line',
-  },
-  {
-    id: 'integrations',
-    subheader: 'Integrations',
-    path: '#!',
-    icon: 'mingcute:plugin-2-fill',
-  },
-  {
-    id: 'authentication',
-    subheader: 'Authentication',
-    icon: 'mingcute:safe-lock-fill',
+    id: 'product',
+    subheader: 'Product',
+    icon: 'mingcute:box-fill',
     items: [
       {
-        name: 'Login',
-        pathName: 'login',
-        path: paths.login,
+        name: 'Add new product',
+        pathName: 'add',
+        path: `${paths.productRoot}/add`,
       },
       {
-        name: 'Signup',
-        pathName: 'signup',
-        path: paths.signup,
+        name: 'View products',
+        pathName: 'view',
+        path: `${paths.productRoot}/view`,
       },
     ],
   },
   {
-    id: 'settings',
-    subheader: 'Settings',
-    path: '#!',
-    icon: 'material-symbols:settings-rounded',
-    active: true,
+    id: 'brand',
+    subheader: 'Brand',
+    icon: 'mingcute:box-fill',
+    items: [
+      {
+        name: 'Add new brand',
+        pathName: 'add',
+        path: `${paths.brandRoot}/add`,
+      },
+      {
+        name: 'View brands',
+        pathName: 'view',
+        path: `${paths.brandRoot}/view`,
+      },
+    ],
   },
   {
-    id: 'template-pages',
-    subheader: 'Template pages',
-    path: '#!',
-    icon: 'mingcute:document-2-fill',
+    id: 'category',
+    subheader: 'Category',
+    icon: 'mingcute:tag-fill',
+    items: [
+      {
+        name: 'Add new category',
+        pathName: 'add',
+        path: `${paths.categoryRoot}/add`,
+      },
+      {
+        name: 'View categories',
+        pathName: 'view',
+        path: `${paths.categoryRoot}/view`,
+      },
+    ],
   },
-  {
-    id: 'account-settings',
-    subheader: 'John Carter',
-    path: '#!',
-  },
+  // {
+  //   id: 'settings',
+  //   subheader: 'Settings',
+  //   path: '#!',
+  //   icon: 'material-symbols:settings-rounded',
+  //   active: true,
+  // },
+  // {
+  //   id: 'template-pages',
+  //   subheader: 'Template pages',
+  //   path: '#!',
+  //   icon: 'mingcute:document-2-fill',
+  // },
+  // {
+  //   id: 'account-settings',
+  //   subheader: 'John Carter',
+  //   path: '#!',
+  // },
 ];
 
 export default sitemap;

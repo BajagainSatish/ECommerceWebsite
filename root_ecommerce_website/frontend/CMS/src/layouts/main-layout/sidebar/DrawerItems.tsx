@@ -3,13 +3,10 @@ import Link from '@mui/material/Link';
 import List from '@mui/material/List';
 import Stack from '@mui/material/Stack';
 import Divider from '@mui/material/Divider';
-import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
 import Typography from '@mui/material/Typography';
 import Image from 'components/base/Image';
-import IconifyIcon from 'components/base/IconifyIcon';
+// import IconifyIcon from 'components/base/IconifyIcon';
 import CollapseListItem from './list-items/CollapseListItem';
 import ProfileListItem from './list-items/ProfileListItem';
 import ListItem from './list-items/ListItem';
@@ -33,13 +30,14 @@ const DrawerItems = () => {
         <ButtonBase component={Link} href="/" disableRipple>
           <Image src={LogoImg} alt="logo" height={24} width={24} sx={{ mr: 1 }} />
           <Typography variant="h5" color="text.primary" fontWeight={600} letterSpacing={1}>
-            Hey hey!
+            HamroEcommerce
           </Typography>
         </ButtonBase>
       </Stack>
 
-      <Box px={3.5} pb={3} pt={1}>
-        <TextField
+      {/* Removed the search box */}
+      <Box px={3.5} pb={3} pt={1}></Box>
+        {/* <TextField
           variant="filled"
           placeholder="Search for..."
           sx={{ width: 1 }}
@@ -50,8 +48,7 @@ const DrawerItems = () => {
               </InputAdornment>
             ),
           }}
-        />
-      </Box>
+        /> */}
 
       <List component="nav" sx={{ px: 2.5 }}>
         {topListData.map((route, index) => {
@@ -74,8 +71,8 @@ const DrawerItems = () => {
         {profileListData && <ProfileListItem {...profileListData} />}
       </List>
 
-      <Box px={3.5} py={6} width={1}>
-        <Button
+      {/* Removed the Wanna Dance! button */}
+      {/* <Button
           variant="contained"
           color="primary"
           size="large"
@@ -83,8 +80,8 @@ const DrawerItems = () => {
           sx={{ width: 1 }}
         >
           Wanna Dance!
-        </Button>
-      </Box>
+        </Button> */}
+      <Box px={3.5} py={6} width={1}></Box>
     </>
   );
 };
