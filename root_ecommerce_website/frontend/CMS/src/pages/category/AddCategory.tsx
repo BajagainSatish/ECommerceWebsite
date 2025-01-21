@@ -1,16 +1,19 @@
+// src/components/AddCategory.tsx
 import { useState, ChangeEvent, FormEvent } from 'react';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
+import { saveCategoriesToLocalStorage, getCategoriesFromLocalStorage } from '../../utils/LocalStorageHelper_Category';
 
 interface Category {
+  id: number;
   name: string;
   description: string;
 }
 
 const AddCategory = () => {
-  const [category, setCategory] = useState<Category>({ name: '', description: '' });
+  const [category, setCategory] = useState<{ name: string; description: string }>({ name: '', description: '' });
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setCategory({ ...category, [e.target.name]: e.target.value });
@@ -18,7 +21,13 @@ const AddCategory = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(category);
+    if (category.name && category.description) {
+      const newCategory: Category = { ...category, id: Date.now() }; // Assign a unique ID
+      const categories = getCategoriesFromLocalStorage(); // Get existing categories from localStorage
+      categories.push(newCategory); // Add new category to the list
+      saveCategoriesToLocalStorage(categories); // Save updated list back to localStorage
+      setCategory({ name: '', description: '' }); // Reset form
+    }
   };
 
   return (

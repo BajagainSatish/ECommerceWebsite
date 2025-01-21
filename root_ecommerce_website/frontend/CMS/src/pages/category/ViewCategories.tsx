@@ -1,4 +1,5 @@
-import { useState } from 'react';
+// src/components/ViewCategories.tsx
+import { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -10,6 +11,7 @@ import Paper from '@mui/material/Paper';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SortIcon from '@mui/icons-material/Sort';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -17,6 +19,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import { saveCategoriesToLocalStorage, getCategoriesFromLocalStorage } from '../../utils/LocalStorageHelper_Category';
 
 interface Category {
   id: number;
@@ -25,37 +28,54 @@ interface Category {
 }
 
 const ViewCategories = () => {
-  const [categories, setCategories] = useState<Category[]>([
-    { id: 1, name: 'Category A', description: 'Description A' },
-    { id: 2, name: 'Category B', description: 'Description B' },
-  ]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [editCategoryState, setEditCategoryState] = useState<Category | null>(null);
+  const [deleteCategoryState, setDeleteCategoryState] = useState<Category | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Track the current sort order
 
-  const [editCategory, setEditCategory] = useState<Category | null>(null);
-  const [deleteCategory, setDeleteCategory] = useState<Category | null>(null);
+  // Load categories from local storage when component mounts
+  useEffect(() => {
+    const storedCategories = getCategoriesFromLocalStorage(); // Retrieve categories from localStorage
+    setCategories(storedCategories); // Update state with stored categories
+  }, []);
+
+  // Function to toggle sort order
+  const toggleSortOrder = () => {
+    setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
+  };
+
+  // Sort categories based on the current sort order
+  const sortedCategories = [...categories].sort((a, b) => {
+    if (a.name.toLowerCase() < b.name.toLowerCase()) return sortOrder === 'asc' ? -1 : 1;
+    if (a.name.toLowerCase() > b.name.toLowerCase()) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   const handleEdit = (category: Category) => {
-    setEditCategory(category);
+    setEditCategoryState(category);
   };
 
   const handleDelete = (category: Category) => {
-    setDeleteCategory(category);
+    setDeleteCategoryState(category);
   };
 
   const confirmDelete = () => {
-    if (deleteCategory) {
-      setCategories(categories.filter((c) => c.id !== deleteCategory.id));
-      setDeleteCategory(null);
+    if (deleteCategoryState) {
+      const updatedCategories = categories.filter((category) => category.id !== deleteCategoryState.id);
+      saveCategoriesToLocalStorage(updatedCategories); // Update localStorage with the new list
+      setCategories(updatedCategories); // Update the state
+      setDeleteCategoryState(null); // Close delete dialog
     }
   };
 
   const saveEdit = () => {
-    if (editCategory) {
-      setCategories(
-        categories.map((c) =>
-          c.id === editCategory.id ? { ...c, ...editCategory } : c
-        )
+    if (editCategoryState) {
+      const updatedCategories = categories.map((category) =>
+        category.id === editCategoryState.id ? editCategoryState : category
       );
-      setEditCategory(null);
+      saveCategoriesToLocalStorage(updatedCategories); // Save updated categories to localStorage
+      setCategories(updatedCategories); // Update state with new category data
+      setEditCategoryState(null); // Close the edit dialog
     }
   };
 
@@ -68,13 +88,18 @@ const ViewCategories = () => {
         <TableHead>
           <TableRow>
             <TableCell>ID</TableCell>
-            <TableCell>Name</TableCell>
+            <TableCell>
+              Name
+              <IconButton onClick={toggleSortOrder}>
+                <SortIcon />
+              </IconButton>
+            </TableCell>
             <TableCell>Description</TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {categories.map((category) => (
+          {sortedCategories.map((category) => (
             <TableRow key={category.id}>
               <TableCell>{category.id}</TableCell>
               <TableCell>{category.name}</TableCell>
@@ -93,16 +118,16 @@ const ViewCategories = () => {
       </Table>
 
       {/* Edit Dialog */}
-      <Dialog open={!!editCategory} onClose={() => setEditCategory(null)}>
+      <Dialog open={!!editCategoryState} onClose={() => setEditCategoryState(null)}>
         <DialogTitle>Edit Category</DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
             label="Name"
             fullWidth
-            value={editCategory?.name || ''}
+            value={editCategoryState?.name || ''}
             onChange={(e) =>
-              setEditCategory((prev) =>
+              setEditCategoryState((prev) =>
                 prev ? { ...prev, name: e.target.value } : null
               )
             }
@@ -111,16 +136,16 @@ const ViewCategories = () => {
             margin="dense"
             label="Description"
             fullWidth
-            value={editCategory?.description || ''}
+            value={editCategoryState?.description || ''}
             onChange={(e) =>
-              setEditCategory((prev) =>
+              setEditCategoryState((prev) =>
                 prev ? { ...prev, description: e.target.value } : null
               )
             }
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditCategory(null)}>Cancel</Button>
+          <Button onClick={() => setEditCategoryState(null)}>Cancel</Button>
           <Button onClick={saveEdit} color="primary">
             Save
           </Button>
@@ -128,15 +153,15 @@ const ViewCategories = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteCategory} onClose={() => setDeleteCategory(null)}>
+      <Dialog open={!!deleteCategoryState} onClose={() => setDeleteCategoryState(null)}>
         <DialogTitle>Delete Category</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete "{deleteCategory?.name}"?
+            Are you sure you want to delete "{deleteCategoryState?.name}"?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteCategory(null)}>Cancel</Button>
+          <Button onClick={() => setDeleteCategoryState(null)}>Cancel</Button>
           <Button onClick={confirmDelete} color="error">
             Delete
           </Button>

@@ -1,16 +1,19 @@
+// src/components/AddBrand.tsx
 import { useState, ChangeEvent, FormEvent } from 'react';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
+import { saveBrandsToLocalStorage, getBrandsFromLocalStorage } from 'utils/LocalStorageHelper_Brand';
 
 interface Brand {
+  id: number;
   name: string;
   description: string;
 }
 
 const AddBrand = () => {
-  const [brand, setBrand] = useState<Brand>({ name: '', description: '' });
+  const [brand, setBrand] = useState<{ name: string; description: string }>({ name: '', description: '' });
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setBrand({ ...brand, [e.target.name]: e.target.value });
@@ -18,7 +21,13 @@ const AddBrand = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(brand);
+    if (brand.name && brand.description) {
+      const newBrand: Brand = { ...brand, id: Date.now() }; // Assign a unique ID
+      const brands = getBrandsFromLocalStorage(); // Get existing brands from localStorage
+      brands.push(newBrand); // Add new brand to the list
+      saveBrandsToLocalStorage(brands); // Save updated list back to localStorage
+      setBrand({ name: '', description: '' }); // Reset form
+    }
   };
 
   return (

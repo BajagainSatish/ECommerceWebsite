@@ -14,7 +14,7 @@ const Footer = () => {
     >
       Made with ❤️ by{' '}
       <Link href="https://themewagon.com/" target="_blank" rel="noreferrer">
-        {'ThemeWagon'}
+        {'SatuDada'}
       </Link>
     </Typography>
   );

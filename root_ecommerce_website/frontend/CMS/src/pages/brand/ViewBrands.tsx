@@ -1,4 +1,4 @@
-import { useState } from 'react';
+// src/components/ViewBrands.tsx
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -10,6 +10,7 @@ import Paper from '@mui/material/Paper';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SortIcon from '@mui/icons-material/Sort';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -17,6 +18,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import { useState, useEffect } from 'react';
+import { saveBrandsToLocalStorage, getBrandsFromLocalStorage } from 'utils/LocalStorageHelper_Brand';
 
 interface Brand {
   id: number;
@@ -25,37 +28,54 @@ interface Brand {
 }
 
 const ViewBrands = () => {
-  const [brands, setBrands] = useState<Brand[]>([
-    { id: 1, name: 'Brand A', description: 'Description A' },
-    { id: 2, name: 'Brand B', description: 'Description B' },
-  ]);
-
+  const [brands, setBrands] = useState<Brand[]>([]); // Holds the list of brands
   const [editBrand, setEditBrand] = useState<Brand | null>(null);
-  const [deleteBrand, setDeleteBrand] = useState<Brand | null>(null);
+  const [deleteBrandDialog, setDeleteBrandDialog] = useState<Brand | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Track the current sort order
+
+  // Load brands from local storage when component mounts
+  useEffect(() => {
+    const storedBrands = getBrandsFromLocalStorage(); // Retrieve brands from localStorage
+    setBrands(storedBrands); // Update state with stored brands
+  }, []);
+
+  // Function to toggle sort order
+  const toggleSortOrder = () => {
+    setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
+  };
+
+  // Sort brands based on the current sort order
+  const sortedBrands = [...brands].sort((a, b) => {
+    if (a.name.toLowerCase() < b.name.toLowerCase()) return sortOrder === 'asc' ? -1 : 1;
+    if (a.name.toLowerCase() > b.name.toLowerCase()) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   const handleEdit = (brand: Brand) => {
     setEditBrand(brand);
   };
 
   const handleDelete = (brand: Brand) => {
-    setDeleteBrand(brand);
+    setDeleteBrandDialog(brand);
   };
 
   const confirmDelete = () => {
-    if (deleteBrand) {
-      setBrands(brands.filter((b) => b.id !== deleteBrand.id));
-      setDeleteBrand(null);
+    if (deleteBrandDialog) {
+      const updatedBrands = brands.filter((brand) => brand.id !== deleteBrandDialog.id);
+      saveBrandsToLocalStorage(updatedBrands); // Update localStorage with the new list
+      setBrands(updatedBrands); // Update the state
+      setDeleteBrandDialog(null); // Close delete dialog
     }
   };
 
   const saveEdit = () => {
     if (editBrand) {
-      setBrands(
-        brands.map((b) =>
-          b.id === editBrand.id ? { ...b, ...editBrand } : b
-        )
+      const updatedBrands = brands.map((brand) =>
+        brand.id === editBrand.id ? editBrand : brand
       );
-      setEditBrand(null);
+      saveBrandsToLocalStorage(updatedBrands); // Save updated brands to localStorage
+      setBrands(updatedBrands); // Update state with new brand data
+      setEditBrand(null); // Close the edit dialog
     }
   };
 
@@ -68,13 +88,18 @@ const ViewBrands = () => {
         <TableHead>
           <TableRow>
             <TableCell>ID</TableCell>
-            <TableCell>Name</TableCell>
+            <TableCell>
+              Name
+              <IconButton onClick={toggleSortOrder}>
+                <SortIcon />
+              </IconButton>
+            </TableCell>
             <TableCell>Description</TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {brands.map((brand) => (
+          {sortedBrands.map((brand) => (
             <TableRow key={brand.id}>
               <TableCell>{brand.id}</TableCell>
               <TableCell>{brand.name}</TableCell>
@@ -128,15 +153,15 @@ const ViewBrands = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteBrand} onClose={() => setDeleteBrand(null)}>
+      <Dialog open={!!deleteBrandDialog} onClose={() => setDeleteBrandDialog(null)}>
         <DialogTitle>Delete Brand</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete "{deleteBrand?.name}"?
+            Are you sure you want to delete "{deleteBrandDialog?.name}"?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteBrand(null)}>Cancel</Button>
+          <Button onClick={() => setDeleteBrandDialog(null)}>Cancel</Button>
           <Button onClick={confirmDelete} color="error">
             Delete
           </Button>
