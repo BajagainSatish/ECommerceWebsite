@@ -7,7 +7,13 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { getProductsFromLocalStorage, deleteProductFromLocalStorage, updateProductInLocalStorage } from 'utils/LocalStorageHelper_Product';
+import {
+  getProductsFromLocalStorage,
+  deleteProductFromLocalStorage,
+  updateProductInLocalStorage,
+} from 'utils/LocalStorageHelper_Product';
+import { getBrandsFromLocalStorage } from 'utils/LocalStorageHelper_Brand';
+import { getCategoriesFromLocalStorage } from 'utils/LocalStorageHelper_Category';
 import { Product } from 'types/Product';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -18,16 +24,25 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import { SelectChangeEvent } from '@mui/material/Select';
+import { FormControl, InputLabel} from '@mui/material';
 
 const ViewProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
+  // Fetch products, brands, and categories
   useEffect(() => {
     setProducts(getProductsFromLocalStorage());
+    setBrands(getBrandsFromLocalStorage().map((brand) => brand.name));
+    setCategories(getCategoriesFromLocalStorage().map((category) => category.name));
   }, []);
 
   const handleEdit = (product: Product) => {
@@ -47,7 +62,7 @@ const ViewProducts = () => {
         const imageUrl = URL.createObjectURL(imageFile); // Temporarily create a URL for the image file
         selectedProduct.image = imageUrl;
       }
-      
+
       updateProductInLocalStorage(selectedProduct);
       setProducts(getProductsFromLocalStorage());
       setOpenEditDialog(false);
@@ -73,15 +88,18 @@ const ViewProducts = () => {
     setSelectedProduct(null);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (selectedProduct) {
-      const { name, value } = e.target;
-      setSelectedProduct({
-        ...selectedProduct,
-        [name]: value,
-      });
-    }
-  };
+const handleInputChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent
+) => {
+  if (selectedProduct) {
+    const { name, value } = e.target;
+    setSelectedProduct({
+      ...selectedProduct,
+      [name as string]: value,
+    });
+  }
+};
+
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
@@ -163,14 +181,21 @@ const ViewProducts = () => {
                 fullWidth
                 margin="normal"
               />
-              <TextField
-                label="Brand"
-                name="brand"
-                value={selectedProduct.brand}
-                onChange={handleInputChange}
-                fullWidth
-                margin="normal"
-              />
+                <FormControl fullWidth margin="normal">
+  <InputLabel>Brand</InputLabel>
+  <Select
+    label="Brand"
+    name="brand"
+    value={selectedProduct?.brand || ''}
+    onChange={handleInputChange}
+  >
+    {brands.map((brand) => (
+      <MenuItem key={brand} value={brand}>
+        {brand}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
               <TextField
                 label="Stock"
                 name="stock"
@@ -180,14 +205,21 @@ const ViewProducts = () => {
                 fullWidth
                 margin="normal"
               />
-              <TextField
-                label="Category"
-                name="category"
-                value={selectedProduct.category}
-                onChange={handleInputChange}
-                fullWidth
-                margin="normal"
-              />
+              <FormControl fullWidth margin="normal">
+  <InputLabel>Category</InputLabel>
+  <Select
+    label="Category"
+    name="category"
+    value={selectedProduct?.category || ''}
+    onChange={handleInputChange}
+  >
+    {categories.map((category) => (
+      <MenuItem key={category} value={category}>
+        {category}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
               <TextField
                 label="Price"
                 name="price"
