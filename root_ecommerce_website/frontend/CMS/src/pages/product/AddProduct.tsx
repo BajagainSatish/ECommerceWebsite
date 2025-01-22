@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -6,6 +6,8 @@ import Stack from '@mui/material/Stack';
 import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import { getBrandsFromLocalStorage } from 'utils/LocalStorageHelper_Brand';
+import { getCategoriesFromLocalStorage } from 'utils/LocalStorageHelper_Category';
 
 interface Product {
   name: string;
@@ -34,6 +36,26 @@ const AddProduct = () => {
     salePrice: '',
   });
 
+  const [brands, setBrands] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+
+// Fetch brands from local storage when the component mounts
+useEffect(() => {
+  const storedBrands = getBrandsFromLocalStorage();
+  const brandNames = storedBrands.map((brand) => brand.name); // Extract only brand names
+  const sortedBrandNames = brandNames.sort((a, b) => a.localeCompare(b)); // Sort alphabetically
+  setBrands(sortedBrandNames);
+}, []);
+
+// Fetch categories from local storage when the component mounts
+useEffect(() => {
+  const storedCategories = getCategoriesFromLocalStorage();
+  const categoryNames = storedCategories.map((category) => category.name); // Extract only category names
+  const sortedCategoryNames = categoryNames.sort((a, b) => a.localeCompare(b)); // Sort alphabetically
+  setCategories(sortedCategoryNames);
+}, []);
+
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
 
@@ -58,9 +80,6 @@ const AddProduct = () => {
     });
     console.log(Object.fromEntries(formData)); // For demonstration, print the data
   };
-
-  const brands = ['Brand A', 'Brand B', 'Brand C'];
-  const categories = ['Category X', 'Category Y', 'Category Z'];
 
   return (
     <Stack onSubmit={handleSubmit} component="form" direction="column" spacing={2}>
@@ -98,11 +117,15 @@ const AddProduct = () => {
         onChange={handleInputChange}
         required
       >
-        {brands.map((brand) => (
-          <MenuItem key={brand} value={brand}>
-            {brand}
-          </MenuItem>
-        ))}
+        {brands.length > 0 ? (
+          brands.map((brand) => (
+            <MenuItem key={brand} value={brand}>
+              {brand}
+            </MenuItem>
+          ))
+        ) : (
+          <MenuItem disabled>No Brands Available</MenuItem>
+        )}
       </TextField>
 
       <TextField
@@ -126,11 +149,15 @@ const AddProduct = () => {
         onChange={handleInputChange}
         required
       >
-        {categories.map((category) => (
-          <MenuItem key={category} value={category}>
+        {categories.length > 0 ? (
+          categories.map((category) => (
+            <MenuItem key={category} value={category}>
             {category}
           </MenuItem>
-        ))}
+          ))
+          ) : (
+          <MenuItem disabled>No Categories Available</MenuItem>
+        )}
       </TextField>
 
       <TextField
