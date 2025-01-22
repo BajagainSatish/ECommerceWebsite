@@ -8,32 +8,22 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { getBrandsFromLocalStorage } from 'utils/LocalStorageHelper_Brand';
 import { getCategoriesFromLocalStorage } from 'utils/LocalStorageHelper_Category';
-
-interface Product {
-  name: string;
-  image: File | null;
-  brand: string;
-  stock: number;
-  category: string;
-  price: string;
-  details: string;
-  isFeatured: boolean;
-  inventoryValue: string;
-  salePrice: string;
-}
+import { addProductToLocalStorage } from 'utils/LocalStorageHelper_Product';
+import { Product } from 'types/Product';
 
 const AddProduct = () => {
   const [product, setProduct] = useState<Product>({
+    id: 0,
     name: '',
-    image: null,
+    image: '',
     brand: '',
     stock: 0,
     category: '',
-    price: '',
+    price: 0,
     details: '',
     isFeatured: false,
-    inventoryValue: '',
-    salePrice: '',
+    inventoryValue: 0,
+    salePrice: 0,
   });
 
   const [brands, setBrands] = useState<string[]>([]);
@@ -57,29 +47,62 @@ useEffect(() => {
 
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
+  const { name, value, type } = e.target;
 
-    if (type === 'file') {
-      setProduct({ ...product, image: (e.target as HTMLInputElement).files?.[0] || null });
-    } else if (name === 'stock') {
-      setProduct({ ...product, stock: parseInt(value) || 0 });
+  if (type === 'file') {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+      // Create a URL for the image file and set it as a string
+      const imageUrl = URL.createObjectURL(file);
+      setProduct({ ...product, image: imageUrl });
     } else {
-      setProduct({ ...product, [name]: value });
+      setProduct({ ...product, image: null });
     }
-  };
+  } else if (name === 'stock') {
+    setProduct({ ...product, stock: parseInt(value) || 0 });
+  } else {
+    setProduct({ ...product, [name]: value });
+  }
+};
+
 
   const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
     setProduct({ ...product, isFeatured: e.target.checked });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData();
-    Object.entries(product).forEach(([key, value]) => {
-      formData.append(key, value instanceof File ? value : String(value));
-    });
-    console.log(Object.fromEntries(formData)); // For demonstration, print the data
+const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  if (!product.image) {
+    alert('Please upload an image.');
+    return;
+  }
+
+  const newProduct = {
+    ...product,
+    id: Date.now(), // Assign a unique ID
+    image: typeof product.image === 'string' ? product.image : '', // Check if image is a string (URL)
   };
+
+  addProductToLocalStorage(newProduct);
+  alert('Product added successfully!');
+
+  // Clear input fields (reset state)
+  setProduct({
+    id: 0,
+    name: '',
+    image: null,
+    brand: '',
+    stock: 0,
+    category: '',
+    price: 0,
+    details: '',
+    isFeatured: false,
+    inventoryValue: 0,
+    salePrice: 0,
+  });
+};
+
 
   return (
     <Stack onSubmit={handleSubmit} component="form" direction="column" spacing={2}>

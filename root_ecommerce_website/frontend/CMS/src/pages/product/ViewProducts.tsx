@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -6,37 +7,16 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import { getProductsFromLocalStorage } from 'utils/LocalStorageHelper_Product';
+import { Product } from 'types/Product';
 // import Button from '@mui/material/Button';
 
 const ViewProducts = () => {
-  const products = [
-    {
-      id: 1,
-      name: 'Product A',
-      image: 'image-a.jpg',
-      brand: 'Brand A',
-      stock: 100,
-      category: 'Category 1',
-      price: '$10',
-      details: 'Detailed description of Product A',
-      isFeatured: true,
-      inventoryValue: '$1000',
-      salePrice: '$8',
-    },
-    {
-      id: 2,
-      name: 'Product B',
-      image: 'image-b.jpg',
-      brand: 'Brand B',
-      stock: 50,
-      category: 'Category 2',
-      price: '$20',
-      details: 'Detailed description of Product B',
-      isFeatured: false,
-      inventoryValue: '$1000',
-      salePrice: '$18',
-    },
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    setProducts(getProductsFromLocalStorage());
+  }, []);
 
   return (
     <TableContainer component={Paper}>
@@ -65,12 +45,17 @@ const ViewProducts = () => {
               <TableCell>{product.id}</TableCell>
               <TableCell>{product.name}</TableCell>
               <TableCell>
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                />
-              </TableCell>
+  {product.image ? (
+    <img
+      src={product.image}
+      alt={product.name}
+      style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+    />
+  ) : (
+    <Typography variant="body2">No Image</Typography>
+  )}
+</TableCell>
+
               <TableCell>{product.brand}</TableCell>
               <TableCell>{product.stock}</TableCell>
               <TableCell>{product.category}</TableCell>
