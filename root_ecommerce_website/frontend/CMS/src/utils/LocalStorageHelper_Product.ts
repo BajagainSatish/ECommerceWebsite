@@ -13,3 +13,17 @@ export const addProductToLocalStorage = (product: Product): void => {
   products.push(product);
   localStorage.setItem(PRODUCT_KEY, JSON.stringify(products));
 };
+
+export const deleteProductFromLocalStorage = (productId: number): void => {
+  const products = getProductsFromLocalStorage();
+  const updatedProducts = products.filter(product => product.id !== productId);
+  localStorage.setItem(PRODUCT_KEY, JSON.stringify(updatedProducts));
+};
+
+export const updateProductInLocalStorage = (updatedProduct: Product): void => {
+  const products = getProductsFromLocalStorage();
+  const updatedProducts = products.map(product =>
+    product.id === updatedProduct.id ? updatedProduct : product
+  );
+  localStorage.setItem(PRODUCT_KEY, JSON.stringify(updatedProducts));
+};

@@ -7,16 +7,88 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { getProductsFromLocalStorage } from 'utils/LocalStorageHelper_Product';
+import { getProductsFromLocalStorage, deleteProductFromLocalStorage, updateProductInLocalStorage } from 'utils/LocalStorageHelper_Product';
 import { Product } from 'types/Product';
-// import Button from '@mui/material/Button';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 
 const ViewProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     setProducts(getProductsFromLocalStorage());
   }, []);
+
+  const handleEdit = (product: Product) => {
+    setSelectedProduct(product);
+    setOpenEditDialog(true);
+  };
+
+  const handleDeleteConfirmation = (product: Product) => {
+    setSelectedProduct(product);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleEditSave = () => {
+    if (selectedProduct) {
+      // Handle image upload if a new image is selected
+      if (imageFile) {
+        const imageUrl = URL.createObjectURL(imageFile); // Temporarily create a URL for the image file
+        selectedProduct.image = imageUrl;
+      }
+      
+      updateProductInLocalStorage(selectedProduct);
+      setProducts(getProductsFromLocalStorage());
+      setOpenEditDialog(false);
+    }
+  };
+
+  const handleDelete = () => {
+    if (selectedProduct) {
+      deleteProductFromLocalStorage(selectedProduct.id);
+      setProducts(getProductsFromLocalStorage());
+      setOpenDeleteDialog(false);
+    }
+  };
+
+  const handleEditClose = () => {
+    setOpenEditDialog(false);
+    setSelectedProduct(null);
+    setImageFile(null); // Reset image file when closing
+  };
+
+  const handleDeleteClose = () => {
+    setOpenDeleteDialog(false);
+    setSelectedProduct(null);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (selectedProduct) {
+      const { name, value } = e.target;
+      setSelectedProduct({
+        ...selectedProduct,
+        [name]: value,
+      });
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      setImageFile(file);
+    }
+  };
 
   return (
     <TableContainer component={Paper}>
@@ -37,6 +109,7 @@ const ViewProducts = () => {
             <TableCell>Is Featured</TableCell>
             <TableCell>Inventory Value</TableCell>
             <TableCell>Sale Price</TableCell>
+            <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -45,17 +118,16 @@ const ViewProducts = () => {
               <TableCell>{product.id}</TableCell>
               <TableCell>{product.name}</TableCell>
               <TableCell>
-  {product.image ? (
-    <img
-      src={product.image}
-      alt={product.name}
-      style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-    />
-  ) : (
-    <Typography variant="body2">No Image</Typography>
-  )}
-</TableCell>
-
+                {product.image ? (
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <Typography variant="body2">No Image</Typography>
+                )}
+              </TableCell>
               <TableCell>{product.brand}</TableCell>
               <TableCell>{product.stock}</TableCell>
               <TableCell>{product.category}</TableCell>
@@ -64,10 +136,127 @@ const ViewProducts = () => {
               <TableCell>{product.isFeatured ? 'Yes' : 'No'}</TableCell>
               <TableCell>{product.inventoryValue}</TableCell>
               <TableCell>{product.salePrice}</TableCell>
+              <TableCell>
+                <IconButton onClick={() => handleEdit(product)} color="primary">
+                  <EditIcon />
+                </IconButton>
+                <IconButton onClick={() => handleDeleteConfirmation(product)} color="secondary">
+                  <DeleteIcon />
+                </IconButton>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      {/* Edit Product Dialog */}
+      <Dialog open={openEditDialog} onClose={handleEditClose}>
+        <DialogTitle>Edit Product</DialogTitle>
+        <DialogContent>
+          {selectedProduct && (
+            <>
+              <TextField
+                label="Name"
+                name="name"
+                value={selectedProduct.name}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Brand"
+                name="brand"
+                value={selectedProduct.brand}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Stock"
+                name="stock"
+                type="number"
+                value={selectedProduct.stock}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Category"
+                name="category"
+                value={selectedProduct.category}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Price"
+                name="price"
+                type="number"
+                value={selectedProduct.price}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Details"
+                name="details"
+                value={selectedProduct.details}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Inventory Value"
+                name="inventoryValue"
+                type="number"
+                value={selectedProduct.inventoryValue}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Sale Price"
+                name="salePrice"
+                type="number"
+                value={selectedProduct.salePrice}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ marginTop: '10px' }}
+              />
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditClose} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleEditSave} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Product Confirmation Dialog */}
+      <Dialog open={openDeleteDialog} onClose={handleDeleteClose}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">Are you sure you want to delete this product?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteClose} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="primary">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </TableContainer>
   );
 };
