@@ -56,7 +56,7 @@ const Topbar = ({ isClosing, mobileOpen, setMobileOpen }: TopbarProps) => {
           fontFamily={fontFamily.workSans}
           display={{ xs: 'none', lg: 'block' }}
         >
-          Analyticss
+          Product Uploaded
         </Typography>
       </Stack>
 
