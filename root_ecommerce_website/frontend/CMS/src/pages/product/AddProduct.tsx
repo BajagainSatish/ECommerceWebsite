@@ -29,80 +29,77 @@ const AddProduct = () => {
   const [brands, setBrands] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
 
-// Fetch brands from local storage when the component mounts
+// Fetch brands from local storage
 useEffect(() => {
   const storedBrands = getBrandsFromLocalStorage();
-  const brandNames = storedBrands.map((brand) => brand.name); // Extract only brand names
-  const sortedBrandNames = brandNames.sort((a, b) => a.localeCompare(b)); // Sort alphabetically
-  setBrands(sortedBrandNames);
+  setBrands(storedBrands.map((brand) => brand.name).sort());
 }, []);
 
-// Fetch categories from local storage when the component mounts
+// Fetch categories from local storage
 useEffect(() => {
   const storedCategories = getCategoriesFromLocalStorage();
-  const categoryNames = storedCategories.map((category) => category.name); // Extract only category names
-  const sortedCategoryNames = categoryNames.sort((a, b) => a.localeCompare(b)); // Sort alphabetically
-  setCategories(sortedCategoryNames);
+  setCategories(storedCategories.map((category) => category.name).sort());
 }, []);
 
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-  const { name, value, type } = e.target;
+    const { name, value, type } = e.target;
 
-  if (type === 'file') {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) {
-      // Create a URL for the image file and set it as a string
-      const imageUrl = URL.createObjectURL(file);
-      setProduct({ ...product, image: imageUrl });
+    if (type === 'file') {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (reader.result) {
+            setProduct({ ...product, image: reader.result as string }); // Save base64 string
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setProduct({ ...product, image: '' });
+      }
+    } else if (name === 'stock') {
+      setProduct({ ...product, stock: parseInt(value, 10) || 0 });
     } else {
-      setProduct({ ...product, image: null });
+      setProduct({ ...product, [name]: value });
     }
-  } else if (name === 'stock') {
-    setProduct({ ...product, stock: parseInt(value) || 0 });
-  } else {
-    setProduct({ ...product, [name]: value });
-  }
-};
-
+  };
 
   const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
     setProduct({ ...product, isFeatured: e.target.checked });
   };
 
-const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  if (!product.image) {
-    alert('Please upload an image.');
-    return;
-  }
+    if (!product.image) {
+      alert('Please upload an image.');
+      return;
+    }
 
-  const newProduct = {
-    ...product,
-    id: Date.now(), // Assign a unique ID
-    image: typeof product.image === 'string' ? product.image : '', // Check if image is a string (URL)
+    const newProduct = {
+      ...product,
+      id: Date.now(), // Assign a unique ID
+    };
+
+    addProductToLocalStorage(newProduct);
+    alert('Product added successfully!');
+
+    // Reset form fields
+    setProduct({
+      id: 0,
+      name: '',
+      image: '',
+      brand: '',
+      stock: 0,
+      category: '',
+      price: 0,
+      details: '',
+      isFeatured: false,
+      inventoryValue: 0,
+      salePrice: 0,
+    });
   };
-
-  addProductToLocalStorage(newProduct);
-  alert('Product added successfully!');
-
-  // Clear input fields (reset state)
-  setProduct({
-    id: 0,
-    name: '',
-    image: null,
-    brand: '',
-    stock: 0,
-    category: '',
-    price: 0,
-    details: '',
-    isFeatured: false,
-    inventoryValue: 0,
-    salePrice: 0,
-  });
-};
-
 
   return (
     <Stack onSubmit={handleSubmit} component="form" direction="column" spacing={2}>
@@ -207,10 +204,15 @@ const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
       />
 
       <FormControlLabel
-        control={<Checkbox checked={product.isFeatured} onChange={handleCheckboxChange} />}
+        control={
+          <Checkbox
+            checked={product.isFeatured}
+            onChange={handleCheckboxChange}
+          />
+        }
         label="Is Featured"
       />
-
+      
       <TextField
         id="inventoryValue"
         name="inventoryValue"
