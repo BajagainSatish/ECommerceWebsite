@@ -103,7 +103,7 @@ export const productsForCategoryClothing = [
     category: 'clothing',
     price: 22.3,
     details: "Slim-fitting style, contrast raglan long sleeve, three-button henley placket.",
-    isFeatured: true,
+    isFeatured: false,
     inventoryValue: 0,
     salePrice: 0
   },
@@ -142,7 +142,7 @@ export const productsForCategoryClothing = [
     category: 'clothing',
     price: 22.3,
     details: "Slim-fitting style, contrast raglan long sleeve, three-button henley placket.",
-    isFeatured: true,
+    isFeatured: false,
     inventoryValue: 0,
     salePrice: 0
   },
@@ -184,7 +184,7 @@ export const productsForCategoryBooks = [
     category: 'books',
     price: 22.3,
     details: "Bookssssssss.",
-    isFeatured: true,
+    isFeatured: false,
     inventoryValue: 0,
     salePrice: 0
   },
@@ -197,7 +197,7 @@ export const productsForCategoryBooks = [
     category: 'books',
     price: 22.3,
     details: "Bookssssssss.",
-    isFeatured: true,
+    isFeatured: false,
     inventoryValue: 0,
     salePrice: 0
   },
