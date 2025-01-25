@@ -29,6 +29,12 @@ const AdBanner: React.FC<AdBannerProps> = ({ imageUrls }) => {
         );
     };
 
+    const handleClose = () => {
+        const adBanner = document.querySelector('.ad-banner') as HTMLElement;
+        adBanner.classList.add('hide');
+        setTimeout(() => setIsVisible(false), 500); // Wait for the slide animation
+    };
+
     if (!isVisible) return null;
 
     return (
@@ -41,7 +47,7 @@ const AdBanner: React.FC<AdBannerProps> = ({ imageUrls }) => {
             
             {/* Close Button */}
             <button
-                onClick={() => setIsVisible(false)}
+                onClick={handleClose}
                 className="close-button"
             >
                 <X size={20} />
