@@ -1,4 +1,3 @@
-// ShoppingCart.tsx
 import "./shoppingCart.css";
 
 interface Product {
@@ -17,10 +16,11 @@ interface Product {
 
 interface ShoppingCartProps {
   cart: Product[];
-  removeFromCart: (productId: number) => void;
+  removeFromCart: (productId: number, index: number) => void;
+  onCheckout: () => void; // Callback for Checkout action
 }
 
-const ShoppingCart: React.FC<ShoppingCartProps> = ({ cart, removeFromCart }) => {
+const ShoppingCart: React.FC<ShoppingCartProps> = ({ cart, removeFromCart, onCheckout }) => {
   return (
     <div className="shopping-cart-container">
       <h1 className="text-center text-2xl font-bold">Shopping Cart</h1>
@@ -28,7 +28,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cart, removeFromCart }) => 
         <p>Your cart is empty.</p>
       ) : (
         <div className="cart-items">
-          {cart.map((product) => (
+          {cart.map((product, index) => (
             <div key={product.id} className="cart-item-card">
               <div className="cart-item-details">
                 <img
@@ -44,7 +44,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cart, removeFromCart }) => 
               </div>
               <button
                 className="remove-item-btn"
-                onClick={() => removeFromCart(product.id)} // Pass remove function
+                onClick={() => removeFromCart(product.id, index)} // Pass both id and index
               >
                 Remove
               </button>
@@ -54,6 +54,11 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cart, removeFromCart }) => 
       )}
       <div className="cart-summary">
         <h2>Total: ${cart.reduce((total, product) => total + product.price, 0)}</h2>
+      </div>
+      <div className="checkout-container">
+        <button className="checkout-btn" onClick={onCheckout}>
+          Checkout
+        </button>
       </div>
     </div>
   );

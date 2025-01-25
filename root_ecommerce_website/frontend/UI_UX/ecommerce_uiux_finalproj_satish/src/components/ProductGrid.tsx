@@ -18,7 +18,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ productsByCategory, addToCart
 
       {Object.entries(productsByCategory).map(([category, categoryProducts]) => (
         <div key={category} className = "category-section">
-          <h2>{category}</h2>
+          {/* <h2>{category}</h2> */}
           <div className={`grid ${isExpanded ? "expanded" : "collapsed"}`}>
             {categoryProducts.map((product) => (
               <ProductCard

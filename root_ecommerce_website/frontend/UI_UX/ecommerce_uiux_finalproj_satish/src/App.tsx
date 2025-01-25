@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AdBanner from "./components/AdBanner";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/SideBar";
@@ -14,6 +14,7 @@ import Footer from "./components/Footer";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import ShoppingCart from "./components/ShoppingCart"; // Import ShoppingCart
 import {Product} from "./components/ProductCard";
+import { saveCartToLocalStorage, loadCartFromLocalStorage, removeCartFromLocalStorage } from './components/CartStorage'; // Import functions
 
 export function App() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]);
@@ -37,12 +38,40 @@ export function App() {
 
   const [cart, setCart] = useState<Product[]>([]); // Cart state lifted to App component
 
+// Load cart from localStorage when the component mounts
+  useEffect(() => {
+    const storedCart = loadCartFromLocalStorage(); // Load from localStorage
+    setCart(storedCart);
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (cart.length > 0) {
+      saveCartToLocalStorage(cart); // Save to localStorage
+    }
+  }, [cart]);
+
+  // Function to add a product to the cart
   const addToCart = (product: Product) => {
-    setCart((prevCart) => [...prevCart, product]);
+    setCart((prevCart) => {
+      const updatedCart = [...prevCart, product];
+      return updatedCart;
+    });
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+  // Function to remove a product from the cart
+  const removeFromCart = (index: number) => {
+    setCart((prevCart) => {
+      const updatedCart = [...prevCart];
+      updatedCart.splice(index, 1); // Remove the item at the specific index
+      return updatedCart;
+    });
+  };
+
+  // Function to clear the cart and localStorage
+  const clearCart = () => {
+    setCart([]); // Clear cart state
+    removeCartFromLocalStorage(); // Clear cart from localStorage
   };
 
   const handleCategoryChange = (category: string, isChecked: boolean) => {
@@ -112,12 +141,18 @@ export function App() {
     return acc;
   }, {} as Record<string, Product[]>);
 
+const onCheckout = () => {
+  // Navigate to a checkout page, or trigger a checkout process
+  alert("Proceeding to checkout!");
+};
+
+
   return (
     <Router>
 
 <div className="w-full min-h-screen bg-slate-50">
       <AdBanner id="heading-banner" imageUrls={images} />
-        <Navbar cartCount={cart.length} />
+        <Navbar cartCount={cart.length} clearCart={clearCart} />
       <main className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
           <Sidebar
@@ -184,7 +219,7 @@ export function App() {
         <Routes>
           <Route
             path="/shopping-cart"
-            element={<ShoppingCart cart={cart} removeFromCart={removeFromCart} />}
+            element={<ShoppingCart cart={cart} removeFromCart={removeFromCart} onCheckout={onCheckout}/>}
           />
         </Routes>
     </Router>

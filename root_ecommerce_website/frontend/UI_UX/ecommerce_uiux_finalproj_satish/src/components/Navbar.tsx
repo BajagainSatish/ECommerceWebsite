@@ -1,18 +1,15 @@
 import React, { useState } from "react";
 import { FiShoppingCart, FiSearch } from "react-icons/fi";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 import "./navbar.css";
 
 interface NavbarProps {
   cartCount: number;
+  clearCart: () => void; // Add clearCart as a prop
 }
 
-const Navbar: React.FC<NavbarProps> = ({ cartCount }) => {
+const Navbar: React.FC<NavbarProps> = ({ cartCount, clearCart }) => {
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const navigate = useNavigate(); // Create a navigate function
-  const goToCart = () => {
-    navigate("/shopping-cart");
-  };
 
   const toggleSearch = () => {
     setIsSearchActive((prev) => !prev); // Toggle the search state
@@ -33,10 +30,16 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount }) => {
 
       {/* Cart and Search Section */}
       <div className="navbar-actions">
-        <button className="cart-container" onClick={goToCart} aria-label="Go to shopping cart">
+        {/* Use Link component to navigate to the shopping cart */}
+        <Link to="/shopping-cart" className="cart-container" aria-label="Go to shopping cart">
           <FiShoppingCart className="icon" />
           <span className="cart-count">{cartCount}</span>
+        </Link>
+
+                <button onClick={clearCart} className="clear-cart-btn">
+          Clear Cart
         </button>
+
         <div className="search-container">
           <FiSearch className="icon" onClick={toggleSearch} />
           <input
