@@ -1,9 +1,13 @@
-// ProductGrid.tsx
+import React from "react";
 import ProductCard from "./ProductCard";
-import { products } from "./productsData"; // Import the product data
 import "./productGrid.css";
 
-const ProductGrid = () => {
+// Define the props type
+type ProductGridProps = {
+  products: Array<{ id: number; name: string; image: string; brand: string; stock: number; category: string; price: number; details: string; isFeatured: boolean; inventoryValue: number; salePrice: number}>;
+};
+
+const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
   return (
     <div className="grid">
       {products.map((product) => (

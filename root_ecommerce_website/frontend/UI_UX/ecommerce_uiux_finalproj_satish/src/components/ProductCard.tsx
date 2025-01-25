@@ -4,9 +4,15 @@ import "./productCard.css";
 interface Product {
   id: number;
   name: string;
-  price: number;
   image: string;
-  description: string;
+  brand: string,
+  category: string,
+  stock: number,
+  price: number,
+  details: string,
+  isFeatured: boolean,
+  inventoryValue: number,
+  salePrice: number,
 }
 
 interface ProductCardProps {
@@ -28,7 +34,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {product.name}
         </h3>
         <p className="text-sm text-slate-600 mb-2 max-h-description overflow-hidden max-w-description">
-          {product.description}
+          {product.details}
         </p>
         <div className="flex justify-between items-center max-w-actions">
           <span className="font-semibold text-slate-800 max-w-price">
