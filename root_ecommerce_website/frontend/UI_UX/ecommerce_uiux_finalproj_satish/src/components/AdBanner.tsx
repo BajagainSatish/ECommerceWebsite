@@ -1,4 +1,3 @@
-// AdBanner.tsx
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import "./AdBanner.css";
@@ -33,7 +32,7 @@ const AdBanner: React.FC<AdBannerProps> = ({ imageUrls }) => {
     if (!isVisible) return null;
 
     return (
-        <div className="ad-banner relative"> {/* Keep relative for z-index context */}
+        <div className="ad-banner relative">
             <img
                 src={imageUrls[currentIndex]}
                 alt={`Ad Banner ${currentIndex + 1}`}
