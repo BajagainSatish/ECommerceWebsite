@@ -1,8 +1,14 @@
-// Navbar.tsx
 import "./navbar.css";
 import { FiShoppingCart, FiSearch } from "react-icons/fi";
+import { useState } from "react";
 
 const Navbar = () => {
+  const [isSearchActive, setIsSearchActive] = useState(false);
+
+  const toggleSearch = () => {
+    setIsSearchActive((prev) => !prev); // Toggle the search state
+  };
+
   return (
     <nav className="navbar">
       {/* Logo Section */}
@@ -23,11 +29,11 @@ const Navbar = () => {
           <span className="cart-count">3</span>
         </div>
         <div className="search-container">
-          <FiSearch className="icon" />
+          <FiSearch className="icon" onClick={toggleSearch} />
           <input
             type="text"
-            placeholder="Search"
-            className="search-input"
+            placeholder={isSearchActive ? "Search" : ""}
+            className={`search-input ${isSearchActive ? 'active' : ''}`}
           />
         </div>
       </div>
