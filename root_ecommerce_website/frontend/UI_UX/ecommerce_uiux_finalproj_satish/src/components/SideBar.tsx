@@ -45,6 +45,21 @@ const Sidebar = ({ onCategoryChange, selectedCategories, onBrandChange, selected
           </div>
         </div>
 
+{/* Price Range Section */}
+        <div className="mb-6">
+          <h3 className="font-medium mb-2 text-slate-700">Price Range</h3>
+          <div className="space-y-2">
+            <input
+              type="range"
+              className="w-full accent-indigo-600"
+              min="0"
+              max="1000"
+              step="10"
+            />
+            <div className="text-sm text-slate-600">$0 - $1000</div>
+          </div>
+        </div>
+
         {/* Brands Section */}
         <div className="mb-6">
           <h3 className="font-medium mb-2 text-slate-700">Brand</h3>
