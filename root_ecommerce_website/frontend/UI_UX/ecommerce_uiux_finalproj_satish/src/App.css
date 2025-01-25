@@ -5,8 +5,9 @@ body {
 }
 
 .container {
-  max-width: 1200px;
-  /* Adjust as needed */
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
 }
 
 /* App.tsx styles */
