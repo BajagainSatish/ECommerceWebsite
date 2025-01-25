@@ -1,7 +1,55 @@
-/* ProductGrid.css (or include in App.css) */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     /* Responsive grid */
     gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    height: 100%;
+    /* Ensures product card stretches within grid */
+    min-height: 300px;
+    /* Prevent cutting off the card */
+}
+
+.product-card:hover {
+    transform: scale(1.05);
+}
+
+.product-card img {
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+.product-card .product-details {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.show-all-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.show-all-btn:hover {
+    background-color: #45a049;
 }

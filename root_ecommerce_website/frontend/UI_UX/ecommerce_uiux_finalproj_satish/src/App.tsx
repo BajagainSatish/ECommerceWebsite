@@ -29,6 +29,8 @@ interface Product {
 export function App() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>(["All"]);
+  const [visibleCategories, setVisibleCategories] = useState<Record<string, boolean>>({});
+  const [showAllFeatured, setShowAllFeatured] = useState<boolean>(false); // State for featured products visibility
 
   const images = [bannerImage1, bannerImage2, bannerImage3, bannerImage4];
 
@@ -72,15 +74,25 @@ export function App() {
     });
   };
 
-const resetFilters = () => {
-  setSelectedCategories(["All"]); // Reset categories to "All"
-  setSelectedBrands(["All"]); // Reset brands to "All"
-  // Additional logic for resetting the price range, if applicable
-  const priceRangeInput = document.getElementById("priceRange") as HTMLInputElement;
-  if (priceRangeInput) {
-    priceRangeInput.value = "0"; // Reset price range slider
-  }
-};
+  const resetFilters = () => {
+    setSelectedCategories(["All"]);
+    setSelectedBrands(["All"]);
+    const priceRangeInput = document.getElementById("priceRange") as HTMLInputElement;
+    if (priceRangeInput) {
+      priceRangeInput.value = "0";
+    }
+  };
+
+  const toggleVisibility = (category: string) => {
+    setVisibleCategories((prev) => ({
+      ...prev,
+      [category]: !prev[category],
+    }));
+  };
+
+  const toggleFeaturedVisibility = () => {
+    setShowAllFeatured((prev) => !prev); // Toggle for featured products visibility
+  };
 
   const filteredProductLists = categoryList.map((category, index) => {
     const filteredProducts = productLists[index].filter((product) => {
@@ -95,49 +107,73 @@ const resetFilters = () => {
     };
   });
 
+  // Group products by category for ProductGrid component
+  const productsByCategory = filteredProductLists.reduce((acc, { category, products }) => {
+    acc[category] = products;
+    return acc;
+  }, {} as Record<string, Product[]>);
+
   return (
     <div className="w-full min-h-screen bg-slate-50">
-<AdBanner id="heading-banner" imageUrls={images} />
+      <AdBanner id="heading-banner" imageUrls={images} />
       <Navbar />
       <main className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
           <Sidebar
-  onCategoryChange={handleCategoryChange}
-  selectedCategories={selectedCategories}
-  onBrandChange={handleBrandChange}
-  selectedBrands={selectedBrands}
-  onReset={resetFilters}
-/>;
+            onCategoryChange={handleCategoryChange}
+            selectedCategories={selectedCategories}
+            onBrandChange={handleBrandChange}
+            selectedBrands={selectedBrands}
+            onReset={resetFilters}
+          />
           <div className="flex-1">
             {featuredProducts.length > 0 && (
               <div className="mb-8">
-                <h1 className="text-2xl font-medium text-slate-800 mb-4">Featured Products:</h1>
-                <ProductGrid products={featuredProducts} />
+                <div className="category-header">
+                  <h1 className="text-2xl font-medium text-slate-800 mb-4">Featured Products:</h1>
+                  <button
+                    className="show-all-btn"
+                    onClick={toggleFeaturedVisibility}
+                  >
+                    {showAllFeatured ? "Hide All" : "Show All"}
+                  </button>
+                </div>
+                <ProductGrid
+                  productsByCategory={{
+                    Featured: showAllFeatured ? featuredProducts : featuredProducts.slice(0, 5), // Show all or only the first 5
+                  }}
+                />
               </div>
             )}
 
-            {filteredProductLists.map((categoryData, index) => (
-  <div key={index}>
-    <div className="mb-8">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-medium text-slate-800">{categoryData.category}</h1>
-      </div>
-      <ProductGrid products={categoryData.products} />
-    </div>
+            {Object.entries(productsByCategory).map(([category, products], index) => (
+              <div key={category}>
+                <div className="mb-8">
+                  <div className="category-header">
+                    <h1 className="text-2xl font-medium text-slate-800">{category}</h1>
+                    <button
+                      className="show-all-btn"
+                      onClick={() => toggleVisibility(category)}
+                    >
+                      {visibleCategories[category] ? "Hide All" : "Show All"}
+                    </button>
+                  </div>
+                  <ProductGrid
+                    productsByCategory={{ [category]: visibleCategories[category] ? products : products.slice(0, 5) }}
+                  />
+                </div>
 
-    {(index + 1) % 2 === 0 && index + 1 !== filteredProductLists.length && (
-      <div className="my-8">
-        <AdBanner id={`category-banner-${index}`} imageUrls={images} />
-      </div>
-    )}
-  </div>
-))}
-
-
+                {(index + 1) % 2 === 0 && index + 1 !== Object.entries(productsByCategory).length && (
+                  <div className="my-8">
+                    <AdBanner id={`category-banner-${index}`} imageUrls={images} />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </main>
-    <Footer/>
+      <Footer />
     </div>
   );
 }
