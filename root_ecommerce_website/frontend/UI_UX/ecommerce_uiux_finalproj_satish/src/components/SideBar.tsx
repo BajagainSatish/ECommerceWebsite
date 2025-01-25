@@ -7,9 +7,16 @@ interface SidebarProps {
   selectedCategories: string[];
   onBrandChange: (brand: string, isChecked: boolean) => void;
   selectedBrands: string[];
+  onReset: () => void; // New prop for resetting
 }
 
-const Sidebar = ({ onCategoryChange, selectedCategories, onBrandChange, selectedBrands }: SidebarProps) => {
+const Sidebar = ({
+  onCategoryChange,
+  selectedCategories,
+  onBrandChange,
+  selectedBrands,
+  onReset,
+}: SidebarProps) => {
   return (
     <aside className="w-64 flex-shrink-0">
       <div className="border border-slate-200 rounded-lg p-4 shadow-sm">
@@ -45,7 +52,7 @@ const Sidebar = ({ onCategoryChange, selectedCategories, onBrandChange, selected
           </div>
         </div>
 
-{/* Price Range Section */}
+        {/* Price Range Section */}
         <div className="mb-6">
           <h3 className="font-medium mb-2 text-slate-700">Price Range</h3>
           <div className="space-y-2">
@@ -55,6 +62,7 @@ const Sidebar = ({ onCategoryChange, selectedCategories, onBrandChange, selected
               min="0"
               max="1000"
               step="10"
+              id="priceRange"
             />
             <div className="text-sm text-slate-600">$0 - $1000</div>
           </div>
@@ -91,7 +99,10 @@ const Sidebar = ({ onCategoryChange, selectedCategories, onBrandChange, selected
         </div>
 
         {/* Reset Button */}
-        <button className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition-colors">
+        <button
+          className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition-colors"
+          onClick={onReset} // Trigger reset handler
+        >
           Reset
         </button>
       </div>

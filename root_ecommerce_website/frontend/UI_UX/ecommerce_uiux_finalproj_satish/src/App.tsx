@@ -72,6 +72,16 @@ export function App() {
     });
   };
 
+const resetFilters = () => {
+  setSelectedCategories(["All"]); // Reset categories to "All"
+  setSelectedBrands(["All"]); // Reset brands to "All"
+  // Additional logic for resetting the price range, if applicable
+  const priceRangeInput = document.getElementById("priceRange") as HTMLInputElement;
+  if (priceRangeInput) {
+    priceRangeInput.value = "0"; // Reset price range slider
+  }
+};
+
   const filteredProductLists = categoryList.map((category, index) => {
     const filteredProducts = productLists[index].filter((product) => {
       const isCategorySelected = selectedCategories.includes("All") || selectedCategories.includes(category.name);
@@ -91,12 +101,13 @@ export function App() {
       <Navbar />
       <main className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
-          <Sidebar 
-            onCategoryChange={handleCategoryChange} 
-            selectedCategories={selectedCategories}
-            onBrandChange={handleBrandChange}
-            selectedBrands={selectedBrands}
-          />
+          <Sidebar
+  onCategoryChange={handleCategoryChange}
+  selectedCategories={selectedCategories}
+  onBrandChange={handleBrandChange}
+  selectedBrands={selectedBrands}
+  onReset={resetFilters}
+/>;
           <div className="flex-1">
             {featuredProducts.length > 0 && (
               <div className="mb-8">
