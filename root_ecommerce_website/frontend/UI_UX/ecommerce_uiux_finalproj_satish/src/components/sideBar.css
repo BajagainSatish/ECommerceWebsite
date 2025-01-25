@@ -4,7 +4,7 @@ aside {
     width: 16rem;
     flex-shrink: 0;
     position: sticky;
-    top: 80px; /* Sets the distance between the sidebar and the top of the page */
+    top: 65px; /* Sets the distance between the sidebar and the top of the page */
     height: 100vh; /* Ensures the sidebar takes up the full height of the viewport */
     z-index: 10; /* Keeps the sidebar on top when scrolling */
 }

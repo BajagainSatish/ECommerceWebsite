@@ -28,12 +28,9 @@ export function App() {
           <Sidebar />
           <div className="flex-1">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-semibold text-slate-800">
-                Men's Clothing
+              <h1 className="text-2xl font-medium text-slate-800">
+                Featured Products:
               </h1>
-              <button className="px-4 py-2 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition-colors">
-                Show All
-              </button>
             </div>
             <ProductGrid />
           </div>

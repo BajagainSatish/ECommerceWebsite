@@ -17,7 +17,7 @@ const Sidebar = () => {
   return (
     <aside className="w-64 flex-shrink-0">
       <div className="border border-slate-200 rounded-lg p-4 shadow-sm">
-        <h2 className="text-xl font-semibold mb-4 text-slate-800">Filter</h2>
+        <h2 className="text-xl font-medium mb-4 text-slate-800">Filter</h2>
         
         {/* Categories Section */}
         <div className="mb-6">
