@@ -4,9 +4,10 @@ import "./AdBanner.css";
 
 interface AdBannerProps {
     imageUrls: string[]; // Array of image URLs
+    id?: string; // Optional ID prop
 }
 
-const AdBanner: React.FC<AdBannerProps> = ({ imageUrls }) => {
+const AdBanner: React.FC<AdBannerProps> = ({ imageUrls, id }) => {
     const [isVisible, setIsVisible] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -18,7 +19,6 @@ const AdBanner: React.FC<AdBannerProps> = ({ imageUrls }) => {
         return () => clearInterval(interval);
     }, [imageUrls.length]);
 
-    // Handle manual navigation
     const goToNext = () => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
     };
@@ -30,26 +30,29 @@ const AdBanner: React.FC<AdBannerProps> = ({ imageUrls }) => {
     };
 
     const handleClose = () => {
-        const adBanner = document.querySelector('.ad-banner') as HTMLElement;
-        adBanner.classList.add('hide');
-        setTimeout(() => setIsVisible(false), 500); // Wait for the slide animation
+        if (id === "heading-banner") {
+            const adBanner = document.querySelector(`#${id}`) as HTMLElement;
+            if (adBanner) {
+                adBanner.classList.add("hide"); // Add animation class for heading-banner
+                setTimeout(() => setIsVisible(false), 500); // Wait for animation to finish
+            }
+        } else {
+            setIsVisible(false); // Instantly hide for other banners
+        }
     };
 
     if (!isVisible) return null;
 
     return (
-        <div className="ad-banner relative">
+        <div id={id} className={`ad-banner relative ${id === "heading-banner" ? "heading-banner" : ""}`}>
             <img
                 src={imageUrls[currentIndex]}
                 alt={`Ad Banner ${currentIndex + 1}`}
                 className="ad-image"
             />
-            
+
             {/* Close Button */}
-            <button
-                onClick={handleClose}
-                className="close-button"
-            >
+            <button onClick={handleClose} className="close-button">
                 <X size={20} />
             </button>
 

@@ -97,7 +97,7 @@ const resetFilters = () => {
 
   return (
     <div className="w-full min-h-screen bg-slate-50">
-      <AdBanner imageUrls={images} />
+<AdBanner id="heading-banner" imageUrls={images} />
       <Navbar />
       <main className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
@@ -117,13 +117,23 @@ const resetFilters = () => {
             )}
 
             {filteredProductLists.map((categoryData, index) => (
-              <div key={index} className="mb-8">
-                <div className="flex justify-between items-center mb-4">
-                  <h1 className="text-2xl font-medium text-slate-800">{categoryData.category}</h1>
-                </div>
-                <ProductGrid products={categoryData.products} />
-              </div>
-            ))}
+  <div key={index}>
+    <div className="mb-8">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-medium text-slate-800">{categoryData.category}</h1>
+      </div>
+      <ProductGrid products={categoryData.products} />
+    </div>
+
+    {(index + 1) % 2 === 0 && index + 1 !== filteredProductLists.length && (
+      <div className="my-8">
+        <AdBanner id={`category-banner-${index}`} imageUrls={images} />
+      </div>
+    )}
+  </div>
+))}
+
+
           </div>
         </div>
       </main>
