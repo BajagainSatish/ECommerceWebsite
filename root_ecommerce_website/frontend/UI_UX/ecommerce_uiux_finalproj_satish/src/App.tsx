@@ -11,20 +11,9 @@ import bannerImage4 from "./bannerimage4.png";
 import { productsForCategoryWatches, productsForCategoryClothing, productsForCategoryBooks } from './components/CategoryProductData/productsData';
 import { totalCategoryData } from './components/CategoryProductData/categoryData';
 import Footer from "./components/Footer";
-
-interface Product {
-  id: number;
-  name: string;
-  image: string;
-  brand: string;
-  stock: number;
-  category: string;
-  price: number;
-  details: string;
-  isFeatured: boolean;
-  inventoryValue: number;
-  salePrice: number;
-}
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import ShoppingCart from "./components/ShoppingCart"; // Import ShoppingCart
+import {Product} from "./components/ProductCard";
 
 export function App() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]);
@@ -45,6 +34,16 @@ export function App() {
       }
     });
   });
+
+  const [cart, setCart] = useState<Product[]>([]); // Cart state lifted to App component
+
+  const addToCart = (product: Product) => {
+    setCart((prevCart) => [...prevCart, product]);
+  };
+
+  const removeFromCart = (productId: number) => {
+    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+  };
 
   const handleCategoryChange = (category: string, isChecked: boolean) => {
     setSelectedCategories(prev => {
@@ -114,9 +113,11 @@ export function App() {
   }, {} as Record<string, Product[]>);
 
   return (
-    <div className="w-full min-h-screen bg-slate-50">
+    <Router>
+
+<div className="w-full min-h-screen bg-slate-50">
       <AdBanner id="heading-banner" imageUrls={images} />
-      <Navbar />
+        <Navbar cartCount={cart.length} />
       <main className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
           <Sidebar
@@ -141,7 +142,10 @@ export function App() {
                 <ProductGrid
                   productsByCategory={{
                     Featured: showAllFeatured ? featuredProducts : featuredProducts.slice(0, 5), // Show all or only the first 5
-                  }}
+                  }
+                }
+                  addToCart = {addToCart}
+                
                 />
               </div>
             )}
@@ -160,6 +164,7 @@ export function App() {
                   </div>
                   <ProductGrid
                     productsByCategory={{ [category]: visibleCategories[category] ? products : products.slice(0, 5) }}
+                    addToCart={addToCart}
                   />
                 </div>
 
@@ -175,5 +180,13 @@ export function App() {
       </main>
       <Footer />
     </div>
+
+        <Routes>
+          <Route
+            path="/shopping-cart"
+            element={<ShoppingCart cart={cart} removeFromCart={removeFromCart} />}
+          />
+        </Routes>
+    </Router>
   );
 }

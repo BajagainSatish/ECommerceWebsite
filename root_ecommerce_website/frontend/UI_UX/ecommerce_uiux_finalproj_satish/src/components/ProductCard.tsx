@@ -1,25 +1,26 @@
 import React from "react";
 import "./productCard.css";
 
-interface Product {
+export interface Product {
   id: number;
   name: string;
   image: string;
-  brand: string,
-  category: string,
-  stock: number,
-  price: number,
-  details: string,
-  isFeatured: boolean,
-  inventoryValue: number,
-  salePrice: number,
+  brand: string;
+  category: string;
+  stock: number;
+  price: number;
+  details: string;
+  isFeatured: boolean;
+  inventoryValue: number;
+  salePrice: number;
 }
 
 interface ProductCardProps {
   product: Product;
+  addToCart: (product: Product) => void; // Function to add product to cart
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart }) => {
   return (
     <div className="border border-slate-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 bg-white max-w-card">
       <div className="aspect-square relative max-h-image max-w-image">
@@ -40,7 +41,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <span className="font-semibold text-slate-800 max-w-price">
             ${product.price}
           </span>
-          <button className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors max-w-button">
+          <button
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors max-w-button"
+            onClick={() => addToCart(product)} // Trigger the addToCart function when clicked
+          >
             Add to Cart
           </button>
         </div>

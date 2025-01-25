@@ -1,55 +1,35 @@
 import React, { useState } from "react";
-import ProductCard from "./ProductCard";
+import ProductCard from "./ProductCard"; // Importing ProductCard
 import "./productGrid.css";
 
-// Define the props type
-type ProductGridProps = {
-  productsByCategory: Record<string, Array<{
-    id: number;
-    name: string;
-    image: string;
-    brand: string;
-    stock: number;
-    category: string;
-    price: number;
-    details: string;
-    isFeatured: boolean;
-    inventoryValue: number;
-    salePrice: number;
-  }>>;
-};
+import {Product} from "./ProductCard";
 
-const ProductGrid: React.FC<ProductGridProps> = ({ productsByCategory }) => {
-  // Track which categories are expanded
-  const [expandedCategories] = useState<Record<string, boolean>>({});
+
+interface ProductGridProps {
+  productsByCategory: Record<string, Product[]>; // Pass the products by category
+  addToCart: (product: Product) => void; // The addToCart function as a prop
+}
+
+const ProductGrid: React.FC<ProductGridProps> = ({ productsByCategory, addToCart }) => {
+  const [isExpanded] = useState(false);
 
   return (
     <div className="product-grid-container">
-      {Object.entries(productsByCategory).map(([category, categoryProducts]) => {
-        const isExpanded = expandedCategories[category] || false;
-        return (
-          <div key={category} className="category-section">
-            {/* Remove the category name header here */}
-            {/* <h2>{category}</h2> */}
-            <div className={`grid ${isExpanded ? "expanded" : "collapsed"}`}>
-              {categoryProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-            {/* Remove the button that causes the issue */}
-            {/* 
-            {categoryProducts.length > 4 && (
-              <button
-                className="toggle-button"
-                onClick={() => toggleCategory(category)}
-              >
-                {isExpanded ? "Hide All" : "Show All"}
-              </button>
-            )}
-            */}
+
+      {Object.entries(productsByCategory).map(([category, categoryProducts]) => (
+        <div key={category} className = "category-section">
+          <h2>{category}</h2>
+          <div className={`grid ${isExpanded ? "expanded" : "collapsed"}`}>
+            {categoryProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                addToCart={addToCart} // Passing the addToCart function here
+              />
+            ))}
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 };
