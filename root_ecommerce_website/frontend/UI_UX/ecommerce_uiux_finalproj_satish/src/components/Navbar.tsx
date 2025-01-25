@@ -10,7 +10,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar">
+    <nav className="navbar sticky-navbar">
       {/* Logo Section */}
       <div className="navbar-logo">HamroEcommerce</div>
 

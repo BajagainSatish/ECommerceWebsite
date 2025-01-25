@@ -1,8 +1,14 @@
 /* SideBar.css */
+
 aside {
     width: 16rem;
     flex-shrink: 0;
+    position: sticky;
+    top: 80px; /* Sets the distance between the sidebar and the top of the page */
+    height: 100vh; /* Ensures the sidebar takes up the full height of the viewport */
+    z-index: 10; /* Keeps the sidebar on top when scrolling */
 }
+
 
 .border-slate-200 {
     border-color: #e2e8f0;
@@ -12,6 +18,15 @@ aside {
     border-radius: 0.5rem;
 }
 
+/* Refined Border with Shadow */
+.border {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adding subtle shadow */
+}
+
+/* Padding and other styling */
 .p-4 {
     padding: 1rem;
 }
@@ -31,8 +46,7 @@ aside {
 .h2 {
     font-size: 1.25rem;
     font-weight: 500;
-    color: #334155;
-    /* slate-800 equivalent */
+    color: #334155; /* slate-800 equivalent */
     margin-bottom: 0.75rem;
 }
 
@@ -41,8 +55,7 @@ aside {
 }
 
 .text-slate-700 {
-    color: #374151;
-    /* slate-700 equivalent */
+    color: #374151; /* slate-700 equivalent */
 }
 
 .font-medium {
@@ -58,7 +71,7 @@ aside {
     margin-bottom: 0.5rem;
 }
 
-.flex items-center {
+.flex.items-center {
     display: flex;
     align-items: center;
 }
@@ -68,14 +81,12 @@ aside {
 }
 
 .text-indigo-600 {
-    color: #4f46e5;
-    /* indigo-600 equivalent */
+    color: #4f46e5; /* indigo-600 equivalent */
 }
 
 .focus-ring-indigo-500 {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25);
-    /* indigo-500 ring */
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25); /* indigo-500 ring */
 }
 
 .w-full {
@@ -83,8 +94,7 @@ aside {
 }
 
 .accent-indigo-600 {
-    accent-color: #4f46e5;
-    /* indigo-600 equivalent */
+    accent-color: #4f46e5; /* indigo-600 equivalent */
 }
 
 .text-sm {
@@ -92,13 +102,11 @@ aside {
 }
 
 .text-slate-600 {
-    color: #4b5563;
-    /* slate-600 equivalent */
+    color: #4b5563; /* slate-600 equivalent */
 }
 
 .bg-indigo-600 {
-    background-color: #4f46e5;
-    /* indigo-600 equivalent */
+    background-color: #4f46e5; /* indigo-600 equivalent */
     color: white;
     padding: 0.5rem 1rem;
     border: none;
@@ -108,8 +116,7 @@ aside {
 }
 
 .bg-indigo-600:hover {
-    background-color: #4338ca;
-    /* indigo-700 equivalent */
+    background-color: #4338ca; /* indigo-700 equivalent */
 }
 
 .py-2 {
@@ -119,6 +126,5 @@ aside {
 
 .hover:bg-indigo-700 {
     transition: background-color 0.2s;
-    background-color: #4338ca;
-    /* indigo-700 equivalent */
+    background-color: #4338ca; /* indigo-700 equivalent */
 }

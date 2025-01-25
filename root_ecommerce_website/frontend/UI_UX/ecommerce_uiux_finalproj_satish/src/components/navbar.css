@@ -8,6 +8,17 @@
     font-family: 'Poppins', sans-serif;
 }
 
+.sticky-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    /* Makes sure navbar is on top of other elements */
+    background-color: #fff;
+    /* Ensure the background is solid so it doesn't overlap with the content */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Adds subtle shadow under navbar */
+}
+
 /* Logo Styling */
 .navbar-logo {
     font-size: 1.8rem;
