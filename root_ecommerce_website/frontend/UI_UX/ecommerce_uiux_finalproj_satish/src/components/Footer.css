@@ -1,0 +1,76 @@
+footer {
+    background-color: #1f2937;
+    /* Dark gray (matches Tailwind's bg-gray-800) */
+    color: #ffffff;
+    /* White text */
+    padding: 1.5rem 1rem;
+    /* Adjust padding for spacing */
+}
+
+footer h4 {
+    font-size: 1.25rem;
+    /* Text-xl */
+    font-weight: 600;
+    /* Font-semibold */
+    margin-bottom: 1rem;
+}
+
+footer p {
+    font-size: 0.875rem;
+    /* Text-sm */
+    line-height: 1.5;
+    /* Increase readability */
+}
+
+footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+footer ul li {
+    margin-bottom: 0.5rem;
+    /* Add spacing between list items */
+}
+
+footer ul li a {
+    color: #ffffff;
+    /* White text for links */
+    text-decoration: none;
+    /* Remove underline */
+    transition: color 0.3s ease;
+    /* Smooth hover transition */
+}
+
+footer ul li a:hover {
+    color: #9ca3af;
+    /* Light gray (matches Tailwind's text-gray-400) */
+}
+
+footer .social-icons a {
+    color: #ffffff;
+    /* White text for social icons */
+    font-size: 1.25rem;
+    /* Slightly larger size for emphasis */
+    margin-right: 0.75rem;
+    /* Spacing between icons */
+    transition: color 0.3s ease;
+    /* Smooth hover transition */
+}
+
+footer .social-icons a:hover {
+    color: #9ca3af;
+    /* Light gray on hover */
+}
+
+footer .footer-bottom {
+    text-align: center;
+    font-size: 0.875rem;
+    /* Text-sm */
+    border-top: 1px solid #374151;
+    /* Border gray-700 */
+    padding-top: 1rem;
+    /* Add spacing above the text */
+    margin-top: 1rem;
+    /* Create space from the upper section */
+}

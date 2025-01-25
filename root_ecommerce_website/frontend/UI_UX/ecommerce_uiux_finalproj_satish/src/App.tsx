@@ -10,6 +10,7 @@ import bannerImage3 from "./bannerimage3.jpg";
 import bannerImage4 from "./bannerimage4.png";
 import { productsForCategoryWatches, productsForCategoryClothing, productsForCategoryBooks } from './components/CategoryProductData/productsData';
 import { totalCategoryData } from './components/CategoryProductData/categoryData';
+import Footer from "./components/Footer";
 
 interface Product {
   id: number;
@@ -115,6 +116,7 @@ export function App() {
           </div>
         </div>
       </main>
+    <Footer/>
     </div>
   );
 }
