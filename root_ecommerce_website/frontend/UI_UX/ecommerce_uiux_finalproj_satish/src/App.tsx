@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import AdBanner from "./components/AdBanner";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/SideBar";
@@ -10,7 +11,6 @@ import bannerImage4 from "./bannerimage4.png";
 import { productsForCategoryWatches, productsForCategoryClothing, productsForCategoryBooks } from './components/CategoryProductData/productsData';
 import { totalCategoryData } from './components/CategoryProductData/categoryData';
 
-// Define the Product type
 interface Product {
   id: number;
   name: string;
@@ -26,16 +26,14 @@ interface Product {
 }
 
 export function App() {
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]); // default "All" selected
+
   const images = [bannerImage1, bannerImage2, bannerImage3, bannerImage4];
 
-  // Manually defined lists for text and products
   const categoryList = totalCategoryData;
   const productLists = [productsForCategoryWatches, productsForCategoryClothing, productsForCategoryBooks];
 
-  // Initialize a list to store featured products with proper typing
   const featuredProducts: Product[] = [];
-
-  // Check for featured products in each category list
   productLists.forEach((productList) => {
     productList.forEach((product) => {
       if (product.isFeatured) {
@@ -44,13 +42,40 @@ export function App() {
     });
   });
 
+  const handleCategoryChange = (category: string, isChecked: boolean) => {
+    setSelectedCategories(prev => {
+      if (category === "All") {
+        // If "All" is clicked, select it and deselect other categories
+        return isChecked ? ["All"] : [];
+      } else {
+        // If a category is checked/unchecked
+        if (isChecked) {
+          return [...prev, category];
+        } else {
+          return prev.filter(c => c !== category);
+        }
+      }
+    });
+  };
+
+  // Filter the products based on the selected categories
+  const filteredProductLists = categoryList.filter((category) => {
+    if (selectedCategories.includes("All")) {
+      return true; // Show all categories if "All" is selected
+    }
+    return selectedCategories.includes(category.name); // Only show selected categories
+  }).map((category, index) => ({
+    category: category.name,
+    products: productLists[index]
+  }));
+
   return (
     <div className="w-full min-h-screen bg-slate-50">
       <AdBanner imageUrls={images} />
       <Navbar />
       <main className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
-          <Sidebar />
+          <Sidebar onCategoryChange={handleCategoryChange} selectedCategories={selectedCategories} />
           <div className="flex-1">
             {/* Display Featured Products */}
             {featuredProducts.length > 0 && (
@@ -61,12 +86,12 @@ export function App() {
             )}
 
             {/* Display Category Products */}
-            {categoryList.map((category, index) => (
+            {filteredProductLists.map((categoryData, index) => (
               <div key={index} className="mb-8">
                 <div className="flex justify-between items-center mb-4">
-                  <h1 className="text-2xl font-medium text-slate-800">{category.name}</h1>
+                  <h1 className="text-2xl font-medium text-slate-800">{categoryData.category}</h1>
                 </div>
-                <ProductGrid products={productLists[index]} />
+                <ProductGrid products={categoryData.products} />
               </div>
             ))}
           </div>

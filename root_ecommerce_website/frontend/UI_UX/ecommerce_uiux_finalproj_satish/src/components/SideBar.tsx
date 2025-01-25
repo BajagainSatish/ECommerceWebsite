@@ -1,35 +1,42 @@
-import './sideBar.css'
+import './sideBar.css';
+import { totalCategoryData } from './CategoryProductData/categoryData';
 
-const categories = [
-  "Men's Clothing",
-  "Women's Clothing",
-  "Jewelry",
-  "Electronics",
-];
+interface SidebarProps {
+  onCategoryChange: (category: string, isChecked: boolean) => void;
+  selectedCategories: string[];
+}
 
-const brands = [
-  "Brand 1",
-  "Brand 2",
-  "Brand 3",
-];
-
-const Sidebar = () => {
+const Sidebar = ({ onCategoryChange, selectedCategories }: SidebarProps) => {
   return (
     <aside className="w-64 flex-shrink-0">
       <div className="border border-slate-200 rounded-lg p-4 shadow-sm">
         <h2 className="text-xl font-medium mb-4 text-slate-800">Filter</h2>
-        
+
         {/* Categories Section */}
         <div className="mb-6">
           <h3 className="font-medium mb-2 text-slate-700">Category</h3>
           <div className="space-y-2">
-            {categories.map((category, index) => (
-              <label key={index} className="flex items-center">
+            {/* All option */}
+            <label key="all" className="flex items-center">
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes("All")}
+                onChange={(e) => onCategoryChange("All", e.target.checked)}
+                className="mr-2 text-indigo-600 focus:ring-indigo-500"
+              />
+              All
+            </label>
+
+            {/* Dynamically generated categories from categoryData.ts */}
+            {totalCategoryData.map((category) => (
+              <label key={category.id} className="flex items-center">
                 <input
                   type="checkbox"
+                  checked={selectedCategories.includes(category.name)}
+                  onChange={(e) => onCategoryChange(category.name, e.target.checked)}
                   className="mr-2 text-indigo-600 focus:ring-indigo-500"
                 />
-                {category}
+                {category.name}
               </label>
             ))}
           </div>
@@ -54,15 +61,7 @@ const Sidebar = () => {
         <div className="mb-6">
           <h3 className="font-medium mb-2 text-slate-700">Brand</h3>
           <div className="space-y-2">
-            {brands.map((brand, index) => (
-              <label key={index} className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="mr-2 text-indigo-600 focus:ring-indigo-500"
-                />
-                {brand}
-              </label>
-            ))}
+            {/* Brands can be added dynamically if necessary */}
           </div>
         </div>
 
