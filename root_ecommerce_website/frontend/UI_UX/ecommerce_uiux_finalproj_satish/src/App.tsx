@@ -26,7 +26,8 @@ interface Product {
 }
 
 export function App() {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]); // default "All" selected
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(["All"]);
 
   const images = [bannerImage1, bannerImage2, bannerImage3, bannerImage4];
 
@@ -45,10 +46,8 @@ export function App() {
   const handleCategoryChange = (category: string, isChecked: boolean) => {
     setSelectedCategories(prev => {
       if (category === "All") {
-        // If "All" is clicked, select it and deselect other categories
         return isChecked ? ["All"] : [];
       } else {
-        // If a category is checked/unchecked
         if (isChecked) {
           return [...prev, category];
         } else {
@@ -58,16 +57,32 @@ export function App() {
     });
   };
 
-  // Filter the products based on the selected categories
-  const filteredProductLists = categoryList.filter((category) => {
-    if (selectedCategories.includes("All")) {
-      return true; // Show all categories if "All" is selected
-    }
-    return selectedCategories.includes(category.name); // Only show selected categories
-  }).map((category, index) => ({
-    category: category.name,
-    products: productLists[index]
-  }));
+  const handleBrandChange = (brand: string, isChecked: boolean) => {
+    setSelectedBrands(prev => {
+      if (brand === "All") {
+        return isChecked ? ["All"] : [];
+      } else {
+        if (isChecked) {
+          return [...prev, brand];
+        } else {
+          return prev.filter(b => b !== brand);
+        }
+      }
+    });
+  };
+
+  const filteredProductLists = categoryList.map((category, index) => {
+    const filteredProducts = productLists[index].filter((product) => {
+      const isCategorySelected = selectedCategories.includes("All") || selectedCategories.includes(category.name);
+      const isBrandSelected = selectedBrands.includes("All") || selectedBrands.includes(product.brand);
+      return isCategorySelected && isBrandSelected;
+    });
+
+    return {
+      category: category.name,
+      products: filteredProducts
+    };
+  });
 
   return (
     <div className="w-full min-h-screen bg-slate-50">
@@ -75,9 +90,13 @@ export function App() {
       <Navbar />
       <main className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
-          <Sidebar onCategoryChange={handleCategoryChange} selectedCategories={selectedCategories} />
+          <Sidebar 
+            onCategoryChange={handleCategoryChange} 
+            selectedCategories={selectedCategories}
+            onBrandChange={handleBrandChange}
+            selectedBrands={selectedBrands}
+          />
           <div className="flex-1">
-            {/* Display Featured Products */}
             {featuredProducts.length > 0 && (
               <div className="mb-8">
                 <h1 className="text-2xl font-medium text-slate-800 mb-4">Featured Products:</h1>
@@ -85,7 +104,6 @@ export function App() {
               </div>
             )}
 
-            {/* Display Category Products */}
             {filteredProductLists.map((categoryData, index) => (
               <div key={index} className="mb-8">
                 <div className="flex justify-between items-center mb-4">

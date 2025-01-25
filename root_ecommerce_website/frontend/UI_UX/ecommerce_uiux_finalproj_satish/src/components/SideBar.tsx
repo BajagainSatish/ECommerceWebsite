@@ -1,12 +1,15 @@
 import './sideBar.css';
 import { totalCategoryData } from './CategoryProductData/categoryData';
+import { totalBrandData } from './CategoryProductData/brandData';
 
 interface SidebarProps {
   onCategoryChange: (category: string, isChecked: boolean) => void;
   selectedCategories: string[];
+  onBrandChange: (brand: string, isChecked: boolean) => void;
+  selectedBrands: string[];
 }
 
-const Sidebar = ({ onCategoryChange, selectedCategories }: SidebarProps) => {
+const Sidebar = ({ onCategoryChange, selectedCategories, onBrandChange, selectedBrands }: SidebarProps) => {
   return (
     <aside className="w-64 flex-shrink-0">
       <div className="border border-slate-200 rounded-lg p-4 shadow-sm">
@@ -42,26 +45,33 @@ const Sidebar = ({ onCategoryChange, selectedCategories }: SidebarProps) => {
           </div>
         </div>
 
-        {/* Price Range Section */}
-        <div className="mb-6">
-          <h3 className="font-medium mb-2 text-slate-700">Price Range</h3>
-          <div className="space-y-2">
-            <input
-              type="range"
-              className="w-full accent-indigo-600"
-              min="0"
-              max="1000"
-              step="10"
-            />
-            <div className="text-sm text-slate-600">$0 - $1000</div>
-          </div>
-        </div>
-
         {/* Brands Section */}
         <div className="mb-6">
           <h3 className="font-medium mb-2 text-slate-700">Brand</h3>
           <div className="space-y-2">
-            {/* Brands can be added dynamically if necessary */}
+            {/* All option */}
+            <label key="allBrands" className="flex items-center">
+              <input
+                type="checkbox"
+                checked={selectedBrands.includes("All")}
+                onChange={(e) => onBrandChange("All", e.target.checked)}
+                className="mr-2 text-indigo-600 focus:ring-indigo-500"
+              />
+              All
+            </label>
+
+            {/* Dynamically generated brands from brandData.ts */}
+            {totalBrandData.map((brand) => (
+              <label key={brand.id} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={selectedBrands.includes(brand.name)}
+                  onChange={(e) => onBrandChange(brand.name, e.target.checked)}
+                  className="mr-2 text-indigo-600 focus:ring-indigo-500"
+                />
+                {brand.name}
+              </label>
+            ))}
           </div>
         </div>
 
