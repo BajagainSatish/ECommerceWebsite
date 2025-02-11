@@ -1,4 +1,3 @@
-// src/components/ViewCategories.tsx
 import { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
@@ -19,7 +18,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import { saveCategoriesToLocalStorage, getCategoriesFromLocalStorage } from '../../utils/LocalStorageHelper_Category';
+import axios from 'axios';
 
 interface Category {
   id: number;
@@ -29,14 +28,24 @@ interface Category {
 
 const ViewCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [editCategoryState, setEditCategoryState] = useState<Category | null>(null);
-  const [deleteCategoryState, setDeleteCategoryState] = useState<Category | null>(null);
+  const [editCategory, setEditCategory] = useState<Category | null>(null);
+  const [deleteCategoryDialog, setDeleteCategoryDialog] = useState<Category | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Track the current sort order
+  const [error, setError] = useState<string | null>(null); // For error handling
 
-  // Load categories from local storage when component mounts
+  const apiUrl = 'http://localhost:5285/api/categories'; // Your API URL
+
+  // Fetch categories from API when component mounts
   useEffect(() => {
-    const storedCategories = getCategoriesFromLocalStorage(); // Retrieve categories from localStorage
-    setCategories(storedCategories); // Update state with stored categories
+    axios
+      .get(apiUrl)
+      .then((response) => {
+        setCategories(response.data);
+      })
+      .catch((err) => {
+        setError('Failed to load categories. Please try again.');
+        console.error('Error fetching categories:', err);
+      });
   }, []);
 
   // Function to toggle sort order
@@ -52,30 +61,40 @@ const ViewCategories = () => {
   });
 
   const handleEdit = (category: Category) => {
-    setEditCategoryState(category);
+    setEditCategory(category);
   };
 
   const handleDelete = (category: Category) => {
-    setDeleteCategoryState(category);
+    setDeleteCategoryDialog(category);
   };
 
   const confirmDelete = () => {
-    if (deleteCategoryState) {
-      const updatedCategories = categories.filter((category) => category.id !== deleteCategoryState.id);
-      saveCategoriesToLocalStorage(updatedCategories); // Update localStorage with the new list
-      setCategories(updatedCategories); // Update the state
-      setDeleteCategoryState(null); // Close delete dialog
+    if (deleteCategoryDialog) {
+      axios
+        .delete(`${apiUrl}/${deleteCategoryDialog.id}`)
+        .then(() => {
+          setCategories(categories.filter((category) => category.id !== deleteCategoryDialog.id)); // Update state
+          setDeleteCategoryDialog(null); // Close delete dialog
+        })
+        .catch((err) => {
+          setError('Failed to delete category. Please try again.');
+          console.error('Error deleting category:', err);
+        });
     }
   };
 
   const saveEdit = () => {
-    if (editCategoryState) {
-      const updatedCategories = categories.map((category) =>
-        category.id === editCategoryState.id ? editCategoryState : category
-      );
-      saveCategoriesToLocalStorage(updatedCategories); // Save updated categories to localStorage
-      setCategories(updatedCategories); // Update state with new category data
-      setEditCategoryState(null); // Close the edit dialog
+    if (editCategory) {
+      axios
+        .put(`${apiUrl}/${editCategory.id}`, editCategory)
+        .then(() => {
+          setCategories(categories.map((category) => (category.id === editCategory.id ? editCategory : category))); // Update state with edited category
+          setEditCategory(null); // Close the edit dialog
+        })
+        .catch((err) => {
+          setError('Failed to update category. Please try again.');
+          console.error('Error updating category:', err);
+        });
     }
   };
 
@@ -84,6 +103,7 @@ const ViewCategories = () => {
       <Typography variant="h4" fontWeight={600} mb={2}>
         Categories List
       </Typography>
+      {error && <Typography color="error">{error}</Typography>}
       <Table>
         <TableHead>
           <TableRow>
@@ -118,34 +138,30 @@ const ViewCategories = () => {
       </Table>
 
       {/* Edit Dialog */}
-      <Dialog open={!!editCategoryState} onClose={() => setEditCategoryState(null)}>
+      <Dialog open={!!editCategory} onClose={() => setEditCategory(null)}>
         <DialogTitle>Edit Category</DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
             label="Name"
             fullWidth
-            value={editCategoryState?.name || ''}
+            value={editCategory?.name || ''}
             onChange={(e) =>
-              setEditCategoryState((prev) =>
-                prev ? { ...prev, name: e.target.value } : null
-              )
+              setEditCategory((prev) => (prev ? { ...prev, name: e.target.value } : null))
             }
           />
           <TextField
             margin="dense"
             label="Description"
             fullWidth
-            value={editCategoryState?.description || ''}
+            value={editCategory?.description || ''}
             onChange={(e) =>
-              setEditCategoryState((prev) =>
-                prev ? { ...prev, description: e.target.value } : null
-              )
+              setEditCategory((prev) => (prev ? { ...prev, description: e.target.value } : null))
             }
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditCategoryState(null)}>Cancel</Button>
+          <Button onClick={() => setEditCategory(null)}>Cancel</Button>
           <Button onClick={saveEdit} color="primary">
             Save
           </Button>
@@ -153,15 +169,15 @@ const ViewCategories = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteCategoryState} onClose={() => setDeleteCategoryState(null)}>
+      <Dialog open={!!deleteCategoryDialog} onClose={() => setDeleteCategoryDialog(null)}>
         <DialogTitle>Delete Category</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete "{deleteCategoryState?.name}"?
+            Are you sure you want to delete "{deleteCategoryDialog?.name}"?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteCategoryState(null)}>Cancel</Button>
+          <Button onClick={() => setDeleteCategoryDialog(null)}>Cancel</Button>
           <Button onClick={confirmDelete} color="error">
             Delete
           </Button>
