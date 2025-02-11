@@ -1,4 +1,3 @@
-// src/components/ViewBrands.tsx
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -19,7 +18,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { useState, useEffect } from 'react';
-import { saveBrandsToLocalStorage, getBrandsFromLocalStorage } from 'utils/LocalStorageHelper_Brand';
+import axios from 'axios';
 
 interface Brand {
   id: number;
@@ -32,11 +31,21 @@ const ViewBrands = () => {
   const [editBrand, setEditBrand] = useState<Brand | null>(null);
   const [deleteBrandDialog, setDeleteBrandDialog] = useState<Brand | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Track the current sort order
+  const [error, setError] = useState<string | null>(null); // For error handling
 
-  // Load brands from local storage when component mounts
+  const apiUrl = "http://localhost:5285/api/brands"; // Your API URL
+
+  // Fetch brands from API when component mounts
   useEffect(() => {
-    const storedBrands = getBrandsFromLocalStorage(); // Retrieve brands from localStorage
-    setBrands(storedBrands); // Update state with stored brands
+    axios
+      .get(apiUrl)
+      .then((response) => {
+        setBrands(response.data);
+      })
+      .catch((err) => {
+        setError("Failed to load brands. Please try again.");
+        console.error("Error fetching brands:", err);
+      });
   }, []);
 
   // Function to toggle sort order
@@ -61,21 +70,31 @@ const ViewBrands = () => {
 
   const confirmDelete = () => {
     if (deleteBrandDialog) {
-      const updatedBrands = brands.filter((brand) => brand.id !== deleteBrandDialog.id);
-      saveBrandsToLocalStorage(updatedBrands); // Update localStorage with the new list
-      setBrands(updatedBrands); // Update the state
-      setDeleteBrandDialog(null); // Close delete dialog
+      axios
+        .delete(`${apiUrl}/${deleteBrandDialog.id}`)
+        .then(() => {
+          setBrands(brands.filter((brand) => brand.id !== deleteBrandDialog.id)); // Update state
+          setDeleteBrandDialog(null); // Close delete dialog
+        })
+        .catch((err) => {
+          setError("Failed to delete brand. Please try again.");
+          console.error("Error deleting brand:", err);
+        });
     }
   };
 
   const saveEdit = () => {
     if (editBrand) {
-      const updatedBrands = brands.map((brand) =>
-        brand.id === editBrand.id ? editBrand : brand
-      );
-      saveBrandsToLocalStorage(updatedBrands); // Save updated brands to localStorage
-      setBrands(updatedBrands); // Update state with new brand data
-      setEditBrand(null); // Close the edit dialog
+      axios
+        .put(`${apiUrl}/${editBrand.id}`, editBrand)
+        .then(() => {
+          setBrands(brands.map((brand) => (brand.id === editBrand.id ? editBrand : brand))); // Update state with edited brand
+          setEditBrand(null); // Close the edit dialog
+        })
+        .catch((err) => {
+          setError("Failed to update brand. Please try again.");
+          console.error("Error updating brand:", err);
+        });
     }
   };
 
@@ -84,6 +103,7 @@ const ViewBrands = () => {
       <Typography variant="h4" fontWeight={600} mb={2}>
         Brands List
       </Typography>
+      {error && <Typography color="error">{error}</Typography>}
       <Table>
         <TableHead>
           <TableRow>
@@ -127,9 +147,7 @@ const ViewBrands = () => {
             fullWidth
             value={editBrand?.name || ''}
             onChange={(e) =>
-              setEditBrand((prev) =>
-                prev ? { ...prev, name: e.target.value } : null
-              )
+              setEditBrand((prev) => (prev ? { ...prev, name: e.target.value } : null))
             }
           />
           <TextField
@@ -138,9 +156,7 @@ const ViewBrands = () => {
             fullWidth
             value={editBrand?.description || ''}
             onChange={(e) =>
-              setEditBrand((prev) =>
-                prev ? { ...prev, description: e.target.value } : null
-              )
+              setEditBrand((prev) => (prev ? { ...prev, description: e.target.value } : null))
             }
           />
         </DialogContent>
