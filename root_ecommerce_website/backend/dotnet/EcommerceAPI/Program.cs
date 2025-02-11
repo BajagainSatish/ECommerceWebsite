@@ -1,13 +1,26 @@
 using EcommerceAPI.Data; // Make sure this matches your project's namespace for the DbContext
 using Microsoft.EntityFrameworkCore;
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy(name: MyAllowSpecificOrigins,
+					  policy =>
+					  {
+						  // Allow both HTTP and HTTPS for local development
+						  policy.WithOrigins("http://localhost:3000", "https://localhost:3000")
+								.AllowAnyHeader()
+								.AllowAnyMethod();
+					  });
+});
 // Add OpenAPI support
 builder.Services.AddOpenApi();
 // Add services to the container.
 builder.Services.AddControllers(); // Ensure this line exists
 builder.Services.AddEndpointsApiExplorer();
+
 
 // Retrieve the connection string from configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -24,7 +37,7 @@ if (app.Environment.IsDevelopment())
 	app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 var summaries = new[]
 {
@@ -45,6 +58,7 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+app.UseCors(MyAllowSpecificOrigins); // Add this before app.UseAuthorization()
 app.UseAuthorization();
 app.MapControllers(); // Ensure this line exists
 app.Run();

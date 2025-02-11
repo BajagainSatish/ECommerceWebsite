@@ -1,10 +1,9 @@
-// src/components/AddBrand.tsx
-import { useState, ChangeEvent, FormEvent } from 'react';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import { saveBrandsToLocalStorage, getBrandsFromLocalStorage } from 'utils/LocalStorageHelper_Brand';
+import { useState, ChangeEvent, FormEvent } from "react";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import axios from "axios";
 
 interface Brand {
   id: number;
@@ -13,22 +12,41 @@ interface Brand {
 }
 
 const AddBrand = () => {
-  const [brand, setBrand] = useState<{ name: string; description: string }>({ name: '', description: '' });
+  const [brand, setBrand] = useState<Omit<Brand, "id">>({ name: "", description: "" });
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setBrand({ ...brand, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (brand.name && brand.description) {
-      const newBrand: Brand = { ...brand, id: Date.now() }; // Assign a unique ID
-      const brands = getBrandsFromLocalStorage(); // Get existing brands from localStorage
-      brands.push(newBrand); // Add new brand to the list
-      saveBrandsToLocalStorage(brands); // Save updated list back to localStorage
-      setBrand({ name: '', description: '' }); // Reset form
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await axios.post("https://localhost:7120/api/brands", brand, {
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (response.status === 201) {
+        setSuccessMessage("Brand added successfully!");
+        setBrand({ name: "", description: "" });
+      } else {
+        setError("Unexpected response from server.");
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Axios Error:", error.response);
+        setError(error.response?.data?.message || "Failed to add brand. Please try again.");
+      } else {
+        console.error("Unexpected Error:", error);
+        setError("An unexpected error occurred.");
+      }
     }
   };
+
 
   return (
     <Stack onSubmit={handleSubmit} component="form" direction="column" spacing={2}>
@@ -58,6 +76,8 @@ const AddBrand = () => {
       <Button type="submit" variant="contained" color="primary">
         Add Brand
       </Button>
+      {successMessage && <Typography color="green">{successMessage}</Typography>}
+      {error && <Typography color="red">{error}</Typography>}
     </Stack>
   );
 };

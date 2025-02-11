@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import axios from "axios";
 
 interface Brand {
   id: number;
@@ -8,9 +9,9 @@ interface Brand {
 
 interface BrandContextProps {
   brands: Brand[];
-  addBrand: (brand: Omit<Brand, 'id'>) => void;
-  updateBrand: (updatedBrand: Brand) => void;  // Added updateBrand method
-  deleteBrand: (id: number) => void;  // Added deleteBrand method
+  addBrand: (brand: Omit<Brand, "id">) => Promise<void>;
+  updateBrand: (updatedBrand: Brand) => Promise<void>;
+  deleteBrand: (id: number) => Promise<void>;
 }
 
 const BrandContext = createContext<BrandContextProps | undefined>(undefined);
@@ -18,7 +19,7 @@ const BrandContext = createContext<BrandContextProps | undefined>(undefined);
 export const useBrandContext = () => {
   const context = useContext(BrandContext);
   if (!context) {
-    throw new Error('useBrandContext must be used within a BrandProvider');
+    throw new Error("useBrandContext must be used within a BrandProvider");
   }
   return context;
 };
@@ -26,24 +27,49 @@ export const useBrandContext = () => {
 export const BrandProvider = ({ children }: { children: ReactNode }) => {
   const [brands, setBrands] = useState<Brand[]>([]);
 
-  const addBrand = (brand: Omit<Brand, 'id'>) => {
-    const newBrand = {
-      id: brands.length + 1, // Generate unique ID
-      ...brand,
+  // Fetch brands from API on component mount
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const response = await axios.get("http://localhost:5285/api/brands");
+        setBrands(response.data);
+      } catch (error) {
+        console.error("Failed to fetch brands:", error);
+      }
     };
-    setBrands((prevBrands) => [...prevBrands, newBrand]);
+    fetchBrands();
+  }, []);
+
+  // Function to add a new brand via API
+  const addBrand = async (brand: Omit<Brand, "id">) => {
+    try {
+      const response = await axios.post("http://localhost:5285/api/brands", brand);
+      setBrands((prevBrands) => [...prevBrands, response.data]);
+    } catch (error) {
+      console.error("Failed to add brand:", error);
+    }
   };
 
-  const updateBrand = (updatedBrand: Brand) => {
-    setBrands((prevBrands) =>
-      prevBrands.map((brand) =>
-        brand.id === updatedBrand.id ? updatedBrand : brand
-      )
-    );
+  // Function to update a brand via API
+  const updateBrand = async (updatedBrand: Brand) => {
+    try {
+      await axios.put(`http://localhost:5285/api/brands/${updatedBrand.id}`, updatedBrand);
+      setBrands((prevBrands) =>
+        prevBrands.map((brand) => (brand.id === updatedBrand.id ? updatedBrand : brand))
+      );
+    } catch (error) {
+      console.error("Failed to update brand:", error);
+    }
   };
 
-  const deleteBrand = (id: number) => {
-    setBrands((prevBrands) => prevBrands.filter((brand) => brand.id !== id));
+  // Function to delete a brand via API
+  const deleteBrand = async (id: number) => {
+    try {
+      await axios.delete(`http://localhost:5285/api/brands/${id}`);
+      setBrands((prevBrands) => prevBrands.filter((brand) => brand.id !== id));
+    } catch (error) {
+      console.error("Failed to delete brand:", error);
+    }
   };
 
   return (
