@@ -3,15 +3,18 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add OpenAPI support
+builder.Services.AddOpenApi();
+// Add services to the container.
+builder.Services.AddControllers(); // Ensure this line exists
+builder.Services.AddEndpointsApiExplorer();
+
 // Retrieve the connection string from configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Register the DbContext with the DI container using SQL Server
 builder.Services.AddDbContext<EcommerceDbContext>(options =>
 	options.UseSqlServer(connectionString));
-
-// Add OpenAPI/Swagger support
-builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -42,6 +45,8 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+app.UseAuthorization();
+app.MapControllers(); // Ensure this line exists
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
