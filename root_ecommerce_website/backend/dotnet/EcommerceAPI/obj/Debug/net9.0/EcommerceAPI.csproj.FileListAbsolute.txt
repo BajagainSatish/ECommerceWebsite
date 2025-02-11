@@ -164,3 +164,4 @@ D:\Course\6th_sem\E-Commerce\FinalProject\root_ecommerce_website\backend\dotnet\
 D:\Course\6th_sem\E-Commerce\FinalProject\root_ecommerce_website\backend\dotnet\EcommerceAPI\obj\Debug\net9.0\EcommerceAPI.pdb
 D:\Course\6th_sem\E-Commerce\FinalProject\root_ecommerce_website\backend\dotnet\EcommerceAPI\obj\Debug\net9.0\EcommerceAPI.genruntimeconfig.cache
 D:\Course\6th_sem\E-Commerce\FinalProject\root_ecommerce_website\backend\dotnet\EcommerceAPI\obj\Debug\net9.0\ref\EcommerceAPI.dll
+D:\Course\6th_sem\E-Commerce\FinalProject\root_ecommerce_website\backend\dotnet\EcommerceAPI\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
