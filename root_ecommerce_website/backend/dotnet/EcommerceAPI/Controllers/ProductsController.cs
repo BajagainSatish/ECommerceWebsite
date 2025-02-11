@@ -20,14 +20,21 @@ namespace EcommerceAPI.Controllers
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
 		{
-			return await _context.Products.ToListAsync();
+			return await _context.Products
+				.Include(p => p.Brand)  // Include Brand details
+				.Include(p => p.Category)  // Include Category details
+				.ToListAsync();
 		}
 
 		// GET: api/products/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Product>> GetProduct(int id)
 		{
-			var product = await _context.Products.FindAsync(id);
+			var product = await _context.Products
+				.Include(p => p.Brand)
+				.Include(p => p.Category)
+				.FirstOrDefaultAsync(p => p.id == id);
+
 			if (product == null)
 			{
 				return NotFound();
@@ -39,11 +46,30 @@ namespace EcommerceAPI.Controllers
 		[HttpPost]
 		public async Task<ActionResult<Product>> PostProduct(Product product)
 		{
+			// Check if Brand exists
+			var brand = await _context.Brands.FindAsync(product.brandId);
+			if (brand == null)
+			{
+				return BadRequest(new { message = "Invalid brandId. Brand not found." });
+			}
+
+			// Check if Category exists
+			var category = await _context.Categories.FindAsync(product.categoryId);
+			if (category == null)
+			{
+				return BadRequest(new { message = "Invalid categoryId. Category not found." });
+			}
+
+			// Assign brand and category to the product
+			product.Brand = brand;
+			product.Category = category;
+
 			_context.Products.Add(product);
 			await _context.SaveChangesAsync();
 
 			return CreatedAtAction(nameof(GetProduct), new { id = product.id }, product);
 		}
+
 
 		// PUT: api/products/5
 		[HttpPut("{id}")]
@@ -52,6 +78,15 @@ namespace EcommerceAPI.Controllers
 			if (id != product.id)
 			{
 				return BadRequest("The ID in the URL does not match the ID in the body.");
+			}
+
+			// Validate if the brand and category exist
+			var brandExists = await _context.Brands.AnyAsync(b => b.id == product.brandId);
+			var categoryExists = await _context.Categories.AnyAsync(c => c.id == product.categoryId);
+
+			if (!brandExists || !categoryExists)
+			{
+				return BadRequest("Invalid Brand ID or Category ID.");
 			}
 
 			_context.Entry(product).State = EntityState.Modified;
