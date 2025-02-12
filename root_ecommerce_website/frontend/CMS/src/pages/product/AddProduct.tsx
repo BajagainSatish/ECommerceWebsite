@@ -9,13 +9,27 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Product } from 'types/Product';
 
+// Define interfaces for Brand and Category (if not already defined)
+interface Brand {
+  id: number;
+  name: string;
+  description: string;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  description: string;
+}
+
 const AddProduct = () => {
-  const [product, setProduct] = useState<Omit<Product, "id">>({
+  // The product state still uses strings for brand and category selections.
+  const [product, setProduct] = useState<Omit<Product, 'id'>>({
     name: '',
     image: '',
-    brand: '',
+    brand: '', // this will be the brand name
     stock: 0,
-    category: '',
+    category: '', // this will be the category name
     price: 0,
     details: '',
     isFeatured: false,
@@ -23,22 +37,25 @@ const AddProduct = () => {
     salePrice: 0,
   });
 
-  const [brands, setBrands] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  // Instead of string arrays, store full objects so we can extract IDs later.
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Fetch brands from API
   useEffect(() => {
-    axios.get('https://localhost:7120/api/brands')
-      .then((response) => setBrands(response.data.map((brand: { name: string }) => brand.name)))
+    axios
+      .get('https://localhost:7120/api/brands')
+      .then((response) => setBrands(response.data))
       .catch(() => setError('Failed to fetch brands'));
   }, []);
 
   // Fetch categories from API
   useEffect(() => {
-    axios.get('https://localhost:7120/api/categories')
-      .then((response) => setCategories(response.data.map((category: { name: string }) => category.name)))
+    axios
+      .get('https://localhost:7120/api/categories')
+      .then((response) => setCategories(response.data))
       .catch(() => setError('Failed to fetch categories'));
   }, []);
 
@@ -79,16 +96,22 @@ const AddProduct = () => {
       return;
     }
 
-    // Convert brand & category names to IDs
-    const brandId = brands.findIndex(b => b === product.brand) + 1;
-    const categoryId = categories.findIndex(c => c === product.category) + 1;
+    // Look up the full brand and category objects using the selected name.
+    const brandObj = brands.find((b) => b.name === product.brand);
+    const categoryObj = categories.find((c) => c.name === product.category);
 
+    if (!brandObj || !categoryObj) {
+      setError('Selected brand or category is invalid.');
+      return;
+    }
+
+    // Prepare the new product object with the IDs expected by the API.
     const newProduct = {
       name: product.name,
       image: product.image,
-      brandId,  // ✅ Correct format
+      brandId: brandObj.id, // Using the brand object's id
       stock: product.stock,
-      categoryId,  // ✅ Correct format
+      categoryId: categoryObj.id, // Using the category object's id
       price: product.price,
       details: product.details,
       isFeatured: product.isFeatured,
@@ -98,7 +121,7 @@ const AddProduct = () => {
 
     try {
       const response = await axios.post('https://localhost:7120/api/products', newProduct, {
-        headers: { "Content-Type": "application/json" }
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (response.status === 201) {
@@ -120,45 +143,147 @@ const AddProduct = () => {
       }
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error("API Error:", error.response?.data?.errors);
-        setError(error.response?.data?.title || "Failed to add product. Please check your inputs.");
+        console.error('API Error:', error.response?.data?.errors);
+        setError(error.response?.data?.title || 'Failed to add product. Please check your inputs.');
       } else {
-        console.error("Unexpected Error:", error);
-        setError("An unexpected error occurred.");
+        console.error('Unexpected Error:', error);
+        setError('An unexpected error occurred.');
       }
     }
   };
 
-
   return (
     <Stack onSubmit={handleSubmit} component="form" direction="column" spacing={2}>
-      <Typography variant="h4" fontWeight={600}>Add New Product</Typography>
+      <Typography variant="h4" fontWeight={600}>
+        Add New Product
+      </Typography>
 
-      <TextField id="name" name="name" label="Product Name" variant="outlined" value={product.name} onChange={handleInputChange} required />
+      <TextField
+        id="name"
+        name="name"
+        label="Product Name"
+        variant="outlined"
+        value={product.name}
+        onChange={handleInputChange}
+        required
+      />
 
-      <TextField id="image" name="image" type="file" variant="outlined" inputProps={{ accept: 'image/*' }} onChange={handleInputChange} required />
+      <TextField
+        id="image"
+        name="image"
+        type="file"
+        variant="outlined"
+        inputProps={{ accept: 'image/*' }}
+        onChange={handleInputChange}
+        required
+      />
 
-      <TextField id="brand" name="brand" label="Brand" variant="outlined" select value={product.brand} onChange={handleInputChange} required>
-        {brands.length > 0 ? brands.map((brand) => <MenuItem key={brand} value={brand}>{brand}</MenuItem>) : <MenuItem disabled>No Brands Available</MenuItem>}
+      <TextField
+        id="brand"
+        name="brand"
+        label="Brand"
+        variant="outlined"
+        select
+        value={product.brand}
+        onChange={handleInputChange}
+        required
+      >
+        {brands.length > 0 ? (
+          brands.map((brand) => (
+            <MenuItem key={brand.id} value={brand.name}>
+              {brand.name}
+            </MenuItem>
+          ))
+        ) : (
+          <MenuItem disabled>No Brands Available</MenuItem>
+        )}
       </TextField>
 
-      <TextField id="stock" name="stock" label="Stock" type="number" variant="outlined" value={product.stock} onChange={handleInputChange} required />
+      <TextField
+        id="stock"
+        name="stock"
+        label="Stock"
+        type="number"
+        variant="outlined"
+        value={product.stock}
+        onChange={handleInputChange}
+        required
+      />
 
-      <TextField id="category" name="category" label="Category" variant="outlined" select value={product.category} onChange={handleInputChange} required>
-        {categories.length > 0 ? categories.map((category) => <MenuItem key={category} value={category}>{category}</MenuItem>) : <MenuItem disabled>No Categories Available</MenuItem>}
-      </TextField>``
+      <TextField
+        id="category"
+        name="category"
+        label="Category"
+        variant="outlined"
+        select
+        value={product.category}
+        onChange={handleInputChange}
+        required
+      >
+        {categories.length > 0 ? (
+          categories.map((category) => (
+            <MenuItem key={category.id} value={category.name}>
+              {category.name}
+            </MenuItem>
+          ))
+        ) : (
+          <MenuItem disabled>No Categories Available</MenuItem>
+        )}
+      </TextField>
 
-      <TextField id="price" name="price" label="Price" type="number" variant="outlined" value={product.price} onChange={handleInputChange} required />
+      <TextField
+        id="price"
+        name="price"
+        label="Price"
+        type="number"
+        variant="outlined"
+        value={product.price}
+        onChange={handleInputChange}
+        required
+      />
 
-      <TextField id="details" name="details" label="Product Details" variant="outlined" multiline rows={4} value={product.details} onChange={handleInputChange} required />
+      <TextField
+        id="details"
+        name="details"
+        label="Product Details"
+        variant="outlined"
+        multiline
+        rows={4}
+        value={product.details}
+        onChange={handleInputChange}
+        required
+      />
 
-      <FormControlLabel control={<Checkbox checked={product.isFeatured} onChange={handleCheckboxChange} />} label="Is Featured" />
+      <FormControlLabel
+        control={<Checkbox checked={product.isFeatured} onChange={handleCheckboxChange} />}
+        label="Is Featured"
+      />
 
-      <TextField id="inventoryValue" name="inventoryValue" label="Inventory Value" type="number" variant="outlined" value={product.inventoryValue} onChange={handleInputChange} required />
+      <TextField
+        id="inventoryValue"
+        name="inventoryValue"
+        label="Inventory Value"
+        type="number"
+        variant="outlined"
+        value={product.inventoryValue}
+        onChange={handleInputChange}
+        required
+      />
 
-      <TextField id="salePrice" name="salePrice" label="Sale Price" type="number" variant="outlined" value={product.salePrice} onChange={handleInputChange} required />
+      <TextField
+        id="salePrice"
+        name="salePrice"
+        label="Sale Price"
+        type="number"
+        variant="outlined"
+        value={product.salePrice}
+        onChange={handleInputChange}
+        required
+      />
 
-      <Button type="submit" variant="contained" color="primary">Add Product</Button>
+      <Button type="submit" variant="contained" color="primary">
+        Add Product
+      </Button>
 
       {successMessage && <Typography color="green">{successMessage}</Typography>}
       {error && <Typography color="red">{error}</Typography>}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -7,13 +8,6 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import {
-  getProductsFromLocalStorage,
-  deleteProductFromLocalStorage,
-  updateProductInLocalStorage,
-} from 'utils/LocalStorageHelper_Product';
-import { getBrandsFromLocalStorage } from 'utils/LocalStorageHelper_Brand';
-import { getCategoriesFromLocalStorage } from 'utils/LocalStorageHelper_Category';
 import { Product } from 'types/Product';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -27,23 +21,56 @@ import Button from '@mui/material/Button';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { SelectChangeEvent } from '@mui/material/Select';
-import { FormControl, InputLabel} from '@mui/material';
+import { FormControl, InputLabel } from '@mui/material';
+
+// Adjust this base URL as needed for your API
+const API_BASE_URL = 'https://localhost:7120/api';
 
 const ViewProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  // Store full brand/category objects so we can retrieve their IDs
+  const [brands, setBrands] = useState<{ id: number; name: string; description: string }[]>([]);
+  const [categories, setCategories] = useState<{ id: number; name: string; description: string }[]>([]);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  // Fetch products, brands, and categories
+  // Fetch products, brands, and categories from the API when the component mounts
   useEffect(() => {
-    setProducts(getProductsFromLocalStorage());
-    setBrands(getBrandsFromLocalStorage().map((brand) => brand.name));
-    setCategories(getCategoriesFromLocalStorage().map((category) => category.name));
+    fetchProducts();
+    fetchBrands();
+    fetchCategories();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/products`);
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
+  const fetchBrands = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/brands`);
+      // Assuming the API returns an array of objects with id, name, description
+      setBrands(response.data);
+    } catch (error) {
+      console.error('Error fetching brands:', error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/categories`);
+      // Assuming the API returns an array of objects with id, name, description
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
@@ -55,25 +82,60 @@ const ViewProducts = () => {
     setOpenDeleteDialog(true);
   };
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     if (selectedProduct) {
-      // Handle image upload if a new image is selected
+      // If a new image file is selected, update the product image.
       if (imageFile) {
-        const imageUrl = URL.createObjectURL(imageFile); // Temporarily create a URL for the image file
+        // Note: Here we use a temporary URL. In production you might want to upload the file and get a persistent URL.
+        const imageUrl = URL.createObjectURL(imageFile);
         selectedProduct.image = imageUrl;
       }
 
-      updateProductInLocalStorage(selectedProduct);
-      setProducts(getProductsFromLocalStorage());
-      setOpenEditDialog(false);
+      // Convert the current brand and category values (which may be strings from the Select)
+      // into the corresponding IDs from the brands and categories lists.
+      const brandName =
+        typeof selectedProduct.brand === 'object'
+          ? selectedProduct.brand.name
+          : selectedProduct.brand;
+      const categoryName =
+        typeof selectedProduct.category === 'object'
+          ? selectedProduct.category.name
+          : selectedProduct.category;
+
+      const brandObj = brands.find((b) => b.name === brandName);
+      const categoryObj = categories.find((c) => c.name === categoryName);
+
+      // Prepare an object that matches what your API expects.
+      const updatedProduct = {
+        ...selectedProduct,
+        // Remove the old brand/category fields if necessary
+        brandId: brandObj ? brandObj.id : null,
+        categoryId: categoryObj ? categoryObj.id : null,
+      };
+
+      try {
+        await axios.put(
+          `${API_BASE_URL}/products/${selectedProduct.id}`,
+          updatedProduct,
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+        fetchProducts();
+        setOpenEditDialog(false);
+      } catch (error) {
+        console.error('Error updating product:', error);
+      }
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selectedProduct) {
-      deleteProductFromLocalStorage(selectedProduct.id);
-      setProducts(getProductsFromLocalStorage());
-      setOpenDeleteDialog(false);
+      try {
+        await axios.delete(`${API_BASE_URL}/products/${selectedProduct.id}`);
+        fetchProducts();
+        setOpenDeleteDialog(false);
+      } catch (error) {
+        console.error('Error deleting product:', error);
+      }
     }
   };
 
@@ -88,18 +150,21 @@ const ViewProducts = () => {
     setSelectedProduct(null);
   };
 
-const handleInputChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent
-) => {
-  if (selectedProduct) {
-    const { name, value } = e.target;
-    setSelectedProduct({
-      ...selectedProduct,
-      [name as string]: value,
-    });
-  }
-};
-
+  const handleInputChange = (
+    e:
+      | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+      | SelectChangeEvent
+  ) => {
+    if (selectedProduct) {
+      const { name, value } = e.target;
+      // Update the selected product.
+      // For brand and category, we store the name (and later convert it to an ID when saving)
+      setSelectedProduct({
+        ...selectedProduct,
+        [name as string]: value,
+      });
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
@@ -140,25 +205,45 @@ const handleInputChange = (
                   <img
                     src={product.image}
                     alt={product.name}
-                    style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                    style={{
+                      width: '50px',
+                      height: '50px',
+                      objectFit: 'cover',
+                    }}
                   />
                 ) : (
                   <Typography variant="body2">No Image</Typography>
                 )}
               </TableCell>
-              <TableCell>{product.brand}</TableCell>
+              {/* Render brand name (if brand is an object, display its name) */}
+              <TableCell>
+                {typeof product.brand === 'object'
+                  ? product.brand.name
+                  : product.brand}
+              </TableCell>
               <TableCell>{product.stock}</TableCell>
-              <TableCell>{product.category}</TableCell>
+              {/* Render category name (if category is an object, display its name) */}
+              <TableCell>
+                {typeof product.category === 'object'
+                  ? product.category.name
+                  : product.category}
+              </TableCell>
               <TableCell>{product.price}</TableCell>
               <TableCell>{product.details}</TableCell>
               <TableCell>{product.isFeatured ? 'Yes' : 'No'}</TableCell>
               <TableCell>{product.inventoryValue}</TableCell>
               <TableCell>{product.salePrice}</TableCell>
               <TableCell>
-                <IconButton onClick={() => handleEdit(product)} color="primary">
+                <IconButton
+                  onClick={() => handleEdit(product)}
+                  color="primary"
+                >
                   <EditIcon />
                 </IconButton>
-                <IconButton onClick={() => handleDeleteConfirmation(product)} color="secondary">
+                <IconButton
+                  onClick={() => handleDeleteConfirmation(product)}
+                  color="secondary"
+                >
                   <DeleteIcon />
                 </IconButton>
               </TableCell>
@@ -181,21 +266,25 @@ const handleInputChange = (
                 fullWidth
                 margin="normal"
               />
-                <FormControl fullWidth margin="normal">
-  <InputLabel>Brand</InputLabel>
-  <Select
-    label="Brand"
-    name="brand"
-    value={selectedProduct?.brand || ''}
-    onChange={handleInputChange}
-  >
-    {brands.map((brand) => (
-      <MenuItem key={brand} value={brand}>
-        {brand}
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Brand</InputLabel>
+                <Select
+                  label="Brand"
+                  name="brand"
+                  value={
+                    typeof selectedProduct.brand === 'object'
+                      ? selectedProduct.brand.name
+                      : selectedProduct.brand
+                  }
+                  onChange={handleInputChange}
+                >
+                  {brands.map((brand) => (
+                    <MenuItem key={brand.id} value={brand.name}>
+                      {brand.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <TextField
                 label="Stock"
                 name="stock"
@@ -206,20 +295,24 @@ const handleInputChange = (
                 margin="normal"
               />
               <FormControl fullWidth margin="normal">
-  <InputLabel>Category</InputLabel>
-  <Select
-    label="Category"
-    name="category"
-    value={selectedProduct?.category || ''}
-    onChange={handleInputChange}
-  >
-    {categories.map((category) => (
-      <MenuItem key={category} value={category}>
-        {category}
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  label="Category"
+                  name="category"
+                  value={
+                    typeof selectedProduct.category === 'object'
+                      ? selectedProduct.category.name
+                      : selectedProduct.category
+                  }
+                  onChange={handleInputChange}
+                >
+                  {categories.map((category) => (
+                    <MenuItem key={category.id} value={category.name}>
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <TextField
                 label="Price"
                 name="price"
@@ -278,7 +371,9 @@ const handleInputChange = (
       <Dialog open={openDeleteDialog} onClose={handleDeleteClose}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>
-          <Typography variant="body1">Are you sure you want to delete this product?</Typography>
+          <Typography variant="body1">
+            Are you sure you want to delete this product?
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteClose} color="secondary">

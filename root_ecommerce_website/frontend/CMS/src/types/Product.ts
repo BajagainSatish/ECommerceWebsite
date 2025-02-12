@@ -1,11 +1,22 @@
-// types/Product.ts
-export interface Product {
-  id: number; // Optional because it's added later
+interface Brand {
+  id: number;
   name: string;
-  image: string | null; // URL or base64 string after processing
-  brand: string;
+  description: string;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  description: string;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  image: string;
+  brand: string | Brand;
   stock: number;
-  category: string;
+  category: string | Category;
   price: number;
   details: string;
   isFeatured: boolean;
