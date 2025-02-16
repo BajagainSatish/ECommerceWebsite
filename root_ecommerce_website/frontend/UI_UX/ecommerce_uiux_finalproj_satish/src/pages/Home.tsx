@@ -1,6 +1,6 @@
 // src/pages/Home.tsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import AdBanner from "../components/AdBanner";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/SideBar";
@@ -10,10 +10,13 @@ import bannerImage1 from "../bannerimage1.jpg";
 import bannerImage2 from "../bannerimage2.jpg";
 import bannerImage3 from "../bannerimage3.jpg";
 import bannerImage4 from "../bannerimage4.png";
-import { productsForCategoryWatches, productsForCategoryClothing, productsForCategoryBooks } from "../components/CategoryProductData/productsData";
-import { totalCategoryData } from "../components/CategoryProductData/categoryData";
+import {
+    productsForCategoryWatches,
+    productsForCategoryClothing,
+    productsForCategoryBooks,
+} from "../components/CategoryProductData/productsData";
+// import { totalCategoryData } from "../components/CategoryProductData/categoryData";
 import { Product } from "../components/ProductCard";
-// import { saveCartToLocalStorage, loadCartFromLocalStorage, removeCartFromLocalStorage } from "../components/CartStorage";
 
 interface HomeProps {
     cart: Product[];
@@ -22,39 +25,36 @@ interface HomeProps {
     clearCart: () => void;
 }
 
-const Home: React.FC<HomeProps> = ({ cart, addToCart, removeFromCart, clearCart }) => {
-    // The navigate hook remains available in case you want to add navigation in the future.
-    const navigate = useNavigate();
+const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
+    // const navigate = useNavigate();
 
+    // Filter states
     const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]);
     const [selectedBrands, setSelectedBrands] = useState<string[]>(["All"]);
+    // New dual price filter: starting min is 50 (changed left-hand limit) and max is 1000.
+    const [selectedMinPrice, setSelectedMinPrice] = useState<number>(0);
+    const [selectedMaxPrice, setSelectedMaxPrice] = useState<number>(1000);
+
     const [visibleCategories, setVisibleCategories] = useState<Record<string, boolean>>({});
-    const [showAllFeatured, setShowAllFeatured] = useState<boolean>(false); // State for featured products visibility
+    const [showAllFeatured, setShowAllFeatured] = useState<boolean>(false);
 
     const images = [bannerImage1, bannerImage2, bannerImage3, bannerImage4];
 
-    const categoryList = totalCategoryData;
+    // Combine all product arrays into one array
     const productLists = [productsForCategoryWatches, productsForCategoryClothing, productsForCategoryBooks];
+    const allProducts = productLists.flat();
 
-    const featuredProducts: Product[] = [];
-    productLists.forEach((productList) => {
-        productList.forEach((product) => {
-            if (product.isFeatured) {
-                featuredProducts.push(product);
-            }
-        });
-    });
-
+    // Handlers for filter changes
     const handleCategoryChange = (category: string, isChecked: boolean) => {
         setSelectedCategories((prev) => {
             if (category === "All") {
-                return isChecked ? ["All"] : [];
+                return isChecked ? ["All"] : []; // Reset to empty if "All" is unchecked
             } else {
-                if (isChecked) {
-                    return [...prev, category];
-                } else {
-                    return prev.filter((c) => c !== category);
-                }
+                let newSelection = isChecked
+                    ? [...prev.filter((c) => c !== "All"), category] // Add category, remove "All"
+                    : prev.filter((c) => c !== category); // Remove category
+
+                return newSelection.length > 0 ? newSelection : ["All"]; // Prevent empty selection
             }
         });
     };
@@ -64,22 +64,28 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, removeFromCart, clearCart 
             if (brand === "All") {
                 return isChecked ? ["All"] : [];
             } else {
-                if (isChecked) {
-                    return [...prev, brand];
-                } else {
-                    return prev.filter((b) => b !== brand);
-                }
+                let newSelection = isChecked
+                    ? [...prev.filter((b) => b !== "All"), brand]
+                    : prev.filter((b) => b !== brand);
+
+                return newSelection.length > 0 ? newSelection : ["All"];
             }
         });
+    };
+
+    const handleMinPriceChange = (price: number) => {
+        setSelectedMinPrice(price);
+    };
+
+    const handleMaxPriceChange = (price: number) => {
+        setSelectedMaxPrice(price);
     };
 
     const resetFilters = () => {
         setSelectedCategories(["All"]);
         setSelectedBrands(["All"]);
-        const priceRangeInput = document.getElementById("priceRange") as HTMLInputElement;
-        if (priceRangeInput) {
-            priceRangeInput.value = "0";
-        }
+        setSelectedMinPrice(0);
+        setSelectedMaxPrice(1000);
     };
 
     const toggleVisibility = (category: string) => {
@@ -90,29 +96,40 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, removeFromCart, clearCart 
     };
 
     const toggleFeaturedVisibility = () => {
-        setShowAllFeatured((prev) => !prev); // Toggle for featured products visibility
+        setShowAllFeatured((prev) => !prev);
     };
 
-    const filteredProductLists = categoryList.map((category, index) => {
-        const filteredProducts = productLists[index].filter((product) => {
-            const isCategorySelected =
-                selectedCategories.includes("All") || selectedCategories.includes(category.name);
-            const isBrandSelected =
-                selectedBrands.includes("All") || selectedBrands.includes(product.brand);
-            return isCategorySelected && isBrandSelected;
-        });
+    // --- Linear filtering approach ---
+    // 1. Filter all products based on category, brand, and the price range.
+    const filteredProducts = allProducts.filter((product) => {
+        const isCategorySelected =
+            selectedCategories.includes("All") ||
+            selectedCategories.some(cat =>
+                cat.toLowerCase() === product.category.toLowerCase()
+            );
 
-        return {
-            category: category.name,
-            products: filteredProducts,
-        };
+        const isBrandSelected =
+            selectedBrands.includes("All") ||
+            selectedBrands.includes(product.brand);
+
+        const isPriceMatch =
+            product.price >= selectedMinPrice &&
+            product.price <= selectedMaxPrice;
+
+        return isCategorySelected && isBrandSelected && isPriceMatch;
     });
 
-    // Group products by category for ProductGrid component
-    const productsByCategory = filteredProductLists.reduce((acc, { category, products }) => {
-        acc[category] = products;
+    // 2. Group filtered products by category for display.
+    const productsByCategory = filteredProducts.reduce((acc, product) => {
+        if (!acc[product.category]) {
+            acc[product.category] = [];
+        }
+        acc[product.category].push(product);
         return acc;
     }, {} as Record<string, Product[]>);
+
+    // 3. Determine featured products from the filtered list.
+    const featuredProducts = filteredProducts.filter((product) => product.isFeatured);
 
     return (
         <div className="w-full min-h-screen bg-slate-50">
@@ -126,6 +143,10 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, removeFromCart, clearCart 
                         onBrandChange={handleBrandChange}
                         selectedBrands={selectedBrands}
                         onReset={resetFilters}
+                        selectedMinPrice={selectedMinPrice}
+                        selectedMaxPrice={selectedMaxPrice}
+                        onMinPriceChange={handleMinPriceChange}
+                        onMaxPriceChange={handleMaxPriceChange}
                     />
                     <div className="flex-1">
                         {featuredProducts.length > 0 && (
@@ -145,7 +166,7 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, removeFromCart, clearCart 
                             </div>
                         )}
 
-                        {Object.entries(productsByCategory).map(([category, products], index) => (
+                        {Object.entries(productsByCategory).map(([category, products]) => (
                             <div key={category}>
                                 <div className="mb-8">
                                     <div className="category-header">
@@ -161,13 +182,6 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, removeFromCart, clearCart 
                                         addToCart={addToCart}
                                     />
                                 </div>
-
-                                {(index + 1) % 2 === 0 &&
-                                    index + 1 !== Object.entries(productsByCategory).length && (
-                                        <div className="my-8">
-                                            <AdBanner id={`category-banner-${index}`} imageUrls={images} />
-                                        </div>
-                                    )}
                             </div>
                         ))}
                     </div>
