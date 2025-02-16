@@ -1,4 +1,6 @@
+// src/components/ProductCard.tsx
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./productCard.css";
 
 export interface Product {
@@ -21,8 +23,17 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart }) => {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/product/${product.id}`);
+  };
+
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 bg-white max-w-card">
+    <div
+      className="border border-slate-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 bg-white max-w-card cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="aspect-square relative max-h-image max-w-image">
         <img
           src={product.image}
@@ -43,7 +54,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart }) => {
           </span>
           <button
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors max-w-button"
-            onClick={() => addToCart(product)} // Trigger the addToCart function when clicked
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent the card click event from firing
+              addToCart(product);
+            }}
           >
             Add to Cart
           </button>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import ShoppingCartPage from "./pages/ShoppingCartPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
 import { Product } from "./components/ProductCard";
 import {
   saveCartToLocalStorage,
@@ -82,6 +83,15 @@ export function App() {
               cart={cart}
               removeFromCart={removeFromCart}
               onCheckout={onCheckout}
+            />
+          }
+        />
+        <Route
+          path="/product/:id"
+          element={
+            <ProductDetailPage
+              cart={cart}
+              addToCart={addToCart}
             />
           }
         />

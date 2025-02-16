@@ -17,6 +17,7 @@
 .hover:shadow-lg {
     transition: box-shadow 0.3s;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
 }
 
 .transition-all {
@@ -89,10 +90,10 @@ img {
     /* Deep slate color */
 }
 
-.font-medium{
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #0f172a;
+.font-medium {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0f172a;
 }
 
 /* Add to Cart button */
@@ -185,4 +186,8 @@ button {
 /* Restrict the max width of the button */
 .max-w-button {
     max-width: 120px;
+}
+
+.cursor-pointer {
+    cursor: pointer;
 }

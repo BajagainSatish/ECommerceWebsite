@@ -1,0 +1,6 @@
+/* For the product image in ProductDetailPage */
+.product-image {
+    max-height: 80vh;
+    width: auto;
+    object-fit: contain;
+}
