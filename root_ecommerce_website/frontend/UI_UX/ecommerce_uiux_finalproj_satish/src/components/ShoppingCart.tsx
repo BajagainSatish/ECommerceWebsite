@@ -73,8 +73,17 @@ const ShoppingCart: React.FC = () => {
 
   const clearCart = async () => {
     try {
-      await axios.delete(`https://localhost:7120/api/ShoppingCart/clear/${userId}`); // Assuming API supports clearing all items
-      setCart([]); // Clear UI cart
+      // Fetch all cart items first
+      const response = await axios.get(`https://localhost:7120/api/ShoppingCart/${userId}`);
+      const cartItems = response.data;
+
+      // Delete each item one by one
+      for (let item of cartItems) {
+        await axios.delete(`https://localhost:7120/api/ShoppingCart/${item.id}`);
+      }
+
+      // After all items are deleted, update the cart state to clear the UI
+      setCart([]);
     } catch (error) {
       setError("Error clearing cart");
     }
@@ -110,7 +119,7 @@ const ShoppingCart: React.FC = () => {
                     <button className="quantity-btn" onClick={() => updateCartItemQuantity(item, item.quantity - 1)}>
                       -
                     </button>
-                    <span>{item.quantity}</span>
+                    <span className="quantity-display">{item.quantity}</span>
                     <button className="quantity-btn" onClick={() => updateCartItemQuantity(item, item.quantity + 1)}>
                       +
                     </button>
@@ -129,14 +138,15 @@ const ShoppingCart: React.FC = () => {
         <h2>Total: ${total.toFixed(2)}</h2>
       </div>
 
-      <div className="checkout-container">
-        <button className="checkout-btn" onClick={onCheckout}>
-          Checkout
-        </button>
+      <div className="checkout-actions">
         <button className="clear-cart-btn" onClick={clearCart}>
           Clear Cart
         </button>
+        <button className="checkout-btn" onClick={onCheckout}>
+          Checkout
+        </button>
       </div>
+
     </div>
   );
 };
