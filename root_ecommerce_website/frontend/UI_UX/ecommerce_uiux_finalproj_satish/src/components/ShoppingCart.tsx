@@ -90,7 +90,24 @@ const ShoppingCart: React.FC = () => {
   };
 
   const onCheckout = () => {
-    // Navigate to checkout page
+    const cartItemsJson = JSON.stringify(cart.map(item => ({
+      userId: item.userId,
+      productId: item.productId,
+      quantity: item.quantity,
+    })));
+
+    const totalAmount = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+
+    // Save the checkout data in localStorage for now (or pass via navigate state)
+    localStorage.setItem("checkoutData", JSON.stringify({
+      name: userId,  // assuming userId is a global variable or fetched from the user context
+      address: "Some address",  // you can fetch it from the CheckoutPage form input
+      totalAmount,
+      paymentStatus: "Pending",
+      cartItemsJson
+    }));
+
+    // Navigate to the checkout page
     window.location.href = "/checkout";
   };
 

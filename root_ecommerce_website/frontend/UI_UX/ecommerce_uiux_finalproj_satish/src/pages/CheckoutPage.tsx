@@ -1,25 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import './checkout.css'
+import axios from "axios";
 
 const CheckoutPage: React.FC = () => {
+    const [checkoutData, setCheckoutData] = useState<any>(null); // This will store the data from localStorage
     const [name, setName] = useState("");
     const [address, setAddress] = useState("");
     const [phone, setPhone] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();  // Using useNavigate to redirect
 
-    const handleSubmit = (e: React.FormEvent) => {
+    useEffect(() => {
+        const data = localStorage.getItem("checkoutData");
+        if (data) {
+            setCheckoutData(JSON.parse(data));
+        } else {
+            setError("No checkout data found.");
+        }
+    }, []);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validate the form data
-        if (!name || !address || !phone) {
-            setError("Please fill in all the fields.");
+        if (!checkoutData) {
+            setError("Missing checkout data.");
             return;
         }
 
-        // Normally, here you'd send the data to the backend to confirm the order
-        alert("Order confirmed successfully. \nShipping details: " + JSON.stringify({ name, address, phone }));
+        // Prepare the payload
+        const orderData = {
+            UserId: checkoutData.name,  // Name is being used as userId
+            Address: checkoutData.address,
+            TotalAmount: checkoutData.totalAmount,
+            PaymentStatus: checkoutData.paymentStatus,
+            CartItemsJson: checkoutData.cartItemsJson
+        };
+
+        try {
+            // Send the data to the backend API (POST request)
+            const response = await axios.post("https://localhost:7120/api/orders", orderData);
+
+            if (response.status === 201) {
+                alert("Order confirmed successfully!");
+                navigate("/");  // Redirect to the home page after successful order
+            }
+        } catch (error) {
+            setError("Error placing the order. Please try again.");
+        }
     };
 
     const goBackToHome = () => {
@@ -32,46 +60,37 @@ const CheckoutPage: React.FC = () => {
 
             {error && <p className="error">{error}</p>}
 
-            <form onSubmit={handleSubmit} className="checkout-form">
-                <div className="form-group">
-                    <label htmlFor="name">Full Name</label>
-                    <input
-                        type="text"
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
-                </div>
+            {checkoutData && (
+                <form onSubmit={handleSubmit} className="checkout-form">
+                    <div className="form-group">
+                        <label htmlFor="name">Full Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            value={checkoutData.name}
+                            onChange={(e) => setCheckoutData({ ...checkoutData, name: e.target.value })}
+                            required
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="address">Address</label>
-                    <input
-                        type="text"
-                        id="address"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        required
-                    />
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="address">Address</label>
+                        <input
+                            type="text"
+                            id="address"
+                            value={checkoutData.address}
+                            onChange={(e) => setCheckoutData({ ...checkoutData, address: e.target.value })}
+                            required
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="phone">Phone Number</label>
-                    <input
-                        type="text"
-                        id="phone"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        required
-                    />
-                </div>
+                    <button type="submit" className="confirm-order-btn">
+                        Confirm Order
+                    </button>
+                </form>
+            )}
 
-                <button type="submit" className="confirm-order-btn">
-                    Confirm Order
-                </button>
-            </form>
-
-            <button className="back-home-btn" onClick={goBackToHome}>
+            <button className="back-home-btn" onClick={() => navigate("/")}>
                 Back to Home
             </button>
         </div>
