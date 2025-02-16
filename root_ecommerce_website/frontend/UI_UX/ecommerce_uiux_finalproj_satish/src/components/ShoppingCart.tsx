@@ -16,6 +16,7 @@ interface Product {
 }
 
 interface CartItem {
+  id: number; // Added 'id' to identify the cart item in DB
   product: Product;
   quantity: number;
 }
@@ -44,8 +45,21 @@ const ShoppingCart: React.FC = () => {
     fetchCartItems();
   }, []);
 
-  const removeFromCart = (productId: number) => {
-    setCart(cart.filter((item) => item.product.id !== productId));
+  const removeFromCart = async (cartItemId: number) => {
+    try {
+      const response = await fetch(`https://localhost:7120/api/ShoppingCart/${cartItemId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to remove item from cart");
+      }
+
+      // Remove item from UI after successful deletion
+      setCart(cart.filter((item) => item.id !== cartItemId));
+    } catch (error) {
+      setError("Error removing item from cart");
+    }
   };
 
   const onCheckout = () => {
@@ -67,7 +81,7 @@ const ShoppingCart: React.FC = () => {
       ) : (
         <div className="cart-items">
           {cart.map((item) => (
-            <div key={item.product.id} className="cart-item-card">
+            <div key={item.id} className="cart-item-card">
               <div className="cart-item-details">
                 <img src={item.product.image} alt={item.product.name} className="cart-item-image" />
                 <div className="cart-item-info">
@@ -77,7 +91,7 @@ const ShoppingCart: React.FC = () => {
                   <div className="cart-item-quantity">Quantity: {item.quantity}</div>
                 </div>
               </div>
-              <button className="remove-item-btn" onClick={() => removeFromCart(item.product.id)}>
+              <button className="remove-item-btn" onClick={() => removeFromCart(item.id)}>
                 Remove
               </button>
             </div>
