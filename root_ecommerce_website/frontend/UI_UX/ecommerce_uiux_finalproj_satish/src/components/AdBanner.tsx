@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, ChevronDown } from "lucide-react";
 import "./AdBanner.css";
 
 interface AdBannerProps {
-    imageUrls: string[]; // Array of image URLs
-    id?: string; // Optional ID prop
+    imageUrls: string[];
+    id?: string;
 }
 
 const AdBanner: React.FC<AdBannerProps> = ({ imageUrls, id }) => {
@@ -33,18 +33,42 @@ const AdBanner: React.FC<AdBannerProps> = ({ imageUrls, id }) => {
         if (id === "heading-banner") {
             const adBanner = document.querySelector(`#${id}`) as HTMLElement;
             if (adBanner) {
-                adBanner.classList.add("hide"); // Add animation class for heading-banner
-                setTimeout(() => setIsVisible(false), 500); // Wait for animation to finish
+                adBanner.classList.add("hide"); // Animate slide/opacity
+                setTimeout(() => setIsVisible(false), 500); // Wait for animation
             }
         } else {
-            setIsVisible(false); // Instantly hide for other banners
+            setIsVisible(false); // For other banners, simply hide
         }
     };
 
-    if (!isVisible) return null;
+    const handleExpand = () => {
+        setIsVisible(true);
+        // Remove the hide class if it's the heading-banner
+        if (id === "heading-banner") {
+            const adBanner = document.querySelector(`#${id}`) as HTMLElement;
+            if (adBanner) {
+                adBanner.classList.remove("hide");
+            }
+        }
+    };
+
+    // Conditionally render the expand button only for heading-banner
+    if (!isVisible) {
+        return id === "heading-banner" ? (
+            <button onClick={handleExpand} className="expand-button">
+                <span className="icon-wrapper">
+                    <ChevronDown size={20} color="#fff" />
+                </span>
+            </button>
+
+        ) : null;
+    }
 
     return (
-        <div id={id} className={`ad-banner relative ${id === "heading-banner" ? "heading-banner" : ""}`}>
+        <div
+            id={id}
+            className={`ad-banner relative ${id === "heading-banner" ? "heading-banner" : ""}`}
+        >
             <img
                 src={imageUrls[currentIndex]}
                 alt={`Ad Banner ${currentIndex + 1}`}
@@ -76,9 +100,8 @@ const AdBanner: React.FC<AdBannerProps> = ({ imageUrls, id }) => {
                 {imageUrls.map((_, index) => (
                     <span
                         key={index}
-                        className={`dot w-2 h-2 rounded-full ${
-                            index === currentIndex ? "bg-gray-800" : "bg-gray-400"
-                        }`}
+                        className={`dot w-2 h-2 rounded-full ${index === currentIndex ? "bg-gray-800" : "bg-gray-400"
+                            }`}
                     ></span>
                 ))}
             </div>
