@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import ProductCard from "./ProductCard"; // Importing ProductCard
 import "./productGrid.css";
 
@@ -11,7 +11,6 @@ interface ProductGridProps {
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ productsByCategory, addToCart }) => {
-  const [isExpanded] = useState(false);
 
   return (
     <div className="product-grid-container">
