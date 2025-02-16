@@ -1,4 +1,3 @@
-// src/App.tsx
 import "./App.css"; // Include your app's CSS
 import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -17,13 +16,11 @@ import axios from "axios";
 export function App() {
   const [cart, setCart] = useState<CartItem[]>(loadCartFromLocalStorage()); // Initialize with CartItem[]
 
-  // Load cart from localStorage when the component mounts
   useEffect(() => {
     const storedCart = loadCartFromLocalStorage();
     setCart(storedCart);
   }, []);
 
-  // Save cart to localStorage whenever it changes
   useEffect(() => {
     if (cart.length > 0) {
       saveCartToLocalStorage(cart);
@@ -32,19 +29,30 @@ export function App() {
     }
   }, [cart]);
 
-  // Add to cart: Merge quantities for existing products
+  // ✅ Updated addToCart function with better error handling
   const addToCart = async (product: Product) => {
     const userId = "satish"; // Hardcoded user ID (replace with actual authentication logic)
 
     try {
-      // Step 1: Check if the product already exists in the cart
-      const cartResponse = await axios.get(`https://localhost:7120/api/ShoppingCart/${userId}`);
-      const cartItems = cartResponse.data;
+      // Step 1: Attempt to fetch the cart
+      let cartItems = [];
+      try {
+        const cartResponse = await axios.get(`https://localhost:7120/api/ShoppingCart/${userId}`);
+        cartItems = cartResponse.data;
+      } catch (error: any) {
+        // ✅ If 404 is received, treat it as an empty cart
+        if (error.response && error.response.status === 404) {
+          console.warn("Cart is empty, initializing new cart.");
+        } else {
+          throw error;
+        }
+      }
 
+      // Step 2: Check if the item already exists
       const existingCartItem = cartItems.find((item: any) => item.productId === product.id);
 
       if (existingCartItem) {
-        // Step 2: If item exists, update the quantity using PUT request
+        // Step 3: If item exists, update the quantity
         const updatedCartItem = {
           id: existingCartItem.id,
           userId,
@@ -55,7 +63,7 @@ export function App() {
         await axios.put(`https://localhost:7120/api/ShoppingCart/${existingCartItem.id}`, updatedCartItem);
         console.log("Cart item updated successfully.");
       } else {
-        // Step 3: If item doesn't exist, add it to the cart using POST request
+        // Step 4: If item doesn't exist, add it to the cart
         const newCartItem = {
           userId,
           productId: product.id,
@@ -69,7 +77,6 @@ export function App() {
       console.error("Error adding/updating cart item:", error);
     }
   };
-
 
   // Remove from cart: Remove the entire product entry
   const removeFromCart = (productId: number) => {

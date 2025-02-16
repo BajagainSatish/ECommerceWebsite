@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import "./shoppingCart.css";
 
 interface Product {
@@ -16,49 +17,66 @@ interface Product {
 }
 
 interface CartItem {
-  id: number; // Added 'id' to identify the cart item in DB
-  product: Product;
+  id: number;
+  userId: string;
+  productId: number;
   quantity: number;
+  product: Product;
 }
 
 const ShoppingCart: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const userId = "satish"; // Hardcoded userId (Replace with dynamic user authentication)
 
   useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        const response = await fetch("https://localhost:7120/api/ShoppingCart/satish");
-        if (!response.ok) {
-          throw new Error("Failed to fetch cart items");
-        }
-        const data: CartItem[] = await response.json();
-        setCart(data);
-      } catch (error) {
-        setError("Error fetching cart items");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCartItems();
   }, []);
 
-  const removeFromCart = async (cartItemId: number) => {
+  const fetchCartItems = async () => {
     try {
-      const response = await fetch(`https://localhost:7120/api/ShoppingCart/${cartItemId}`, {
-        method: "DELETE",
+      const response = await axios.get(`https://localhost:7120/api/ShoppingCart/${userId}`);
+      setCart(response.data);
+    } catch (error) {
+      setError("Error fetching cart items");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateCartItemQuantity = async (cartItem: CartItem, newQuantity: number) => {
+    if (newQuantity < 1) return removeFromCart(cartItem.id); // If quantity is 0, remove item
+
+    try {
+      await axios.put(`https://localhost:7120/api/ShoppingCart/${cartItem.id}`, {
+        id: cartItem.id,
+        userId: userId,
+        productId: cartItem.productId,
+        quantity: newQuantity,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to remove item from cart");
-      }
+      setCart(cart.map((item) => (item.id === cartItem.id ? { ...item, quantity: newQuantity } : item)));
+    } catch (error) {
+      setError("Error updating cart item quantity");
+    }
+  };
 
-      // Remove item from UI after successful deletion
+  const removeFromCart = async (cartItemId: number) => {
+    try {
+      await axios.delete(`https://localhost:7120/api/ShoppingCart/${cartItemId}`);
       setCart(cart.filter((item) => item.id !== cartItemId));
     } catch (error) {
       setError("Error removing item from cart");
+    }
+  };
+
+  const clearCart = async () => {
+    try {
+      await axios.delete(`https://localhost:7120/api/ShoppingCart/clear/${userId}`); // Assuming API supports clearing all items
+      setCart([]); // Clear UI cart
+    } catch (error) {
+      setError("Error clearing cart");
     }
   };
 
@@ -88,7 +106,15 @@ const ShoppingCart: React.FC = () => {
                   <h3 className="cart-item-name">{item.product.name}</h3>
                   <p className="cart-item-description">{item.product.details}</p>
                   <span className="cart-item-price">${item.product.price}</span>
-                  <div className="cart-item-quantity">Quantity: {item.quantity}</div>
+                  <div className="cart-item-quantity">
+                    <button className="quantity-btn" onClick={() => updateCartItemQuantity(item, item.quantity - 1)}>
+                      -
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button className="quantity-btn" onClick={() => updateCartItemQuantity(item, item.quantity + 1)}>
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
               <button className="remove-item-btn" onClick={() => removeFromCart(item.id)}>
@@ -100,11 +126,15 @@ const ShoppingCart: React.FC = () => {
       )}
 
       <div className="cart-summary">
-        <h2>Total: ${total}</h2>
+        <h2>Total: ${total.toFixed(2)}</h2>
       </div>
+
       <div className="checkout-container">
         <button className="checkout-btn" onClick={onCheckout}>
           Checkout
+        </button>
+        <button className="clear-cart-btn" onClick={clearCart}>
+          Clear Cart
         </button>
       </div>
     </div>

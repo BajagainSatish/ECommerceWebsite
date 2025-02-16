@@ -6,24 +6,35 @@ import "./navbar.css";
 const Navbar: React.FC = () => {
   const [cartCount, setCartCount] = useState(0);
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const userId = "satish"; // Hardcoded user ID (replace with auth logic)
 
   useEffect(() => {
     const fetchCartCount = async () => {
       try {
-        const response = await fetch("https://localhost:7120/api/ShoppingCart/satish");
-        if (!response.ok) {
-          throw new Error("Failed to fetch cart count");
+        const response = await fetch(`https://localhost:7120/api/ShoppingCart/${userId}`);
+
+        // ✅ Handle 404 explicitly before calling `.json()`
+        if (response.status === 404) {
+          console.warn("Cart is empty, setting count to 0.");
+          setCartCount(0);
+          return;
         }
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch cart count, status: ${response.status}`);
+        }
+
         const data = await response.json();
-        setCartCount(data.length); // Count total cart items
+        setCartCount(Array.isArray(data) ? data.length : 0); // Ensure it's a number
       } catch (error) {
         console.error("Error fetching cart count:", error);
+        setCartCount(0); // Ensure app remains functional
       }
     };
 
     fetchCartCount();
 
-    // Poll every 5 seconds to keep it updated
+    // Poll every 5 seconds to keep cart count updated
     const interval = setInterval(fetchCartCount, 5000);
 
     return () => clearInterval(interval);
