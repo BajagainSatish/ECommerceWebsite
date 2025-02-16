@@ -90,7 +90,8 @@ const ShoppingCart: React.FC = () => {
   };
 
   const onCheckout = () => {
-    alert("Proceeding to checkout...");
+    // Navigate to checkout page
+    window.location.href = "/checkout";
   };
 
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);

@@ -11,6 +11,7 @@ namespace EcommerceAPI.Data
 		public DbSet<Brand> Brands { get; set; }
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
+		public DbSet<Order> Orders { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{

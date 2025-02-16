@@ -12,6 +12,7 @@ import {
 } from "./components/CartStorage";
 import { CartItem } from './pages/Home'; // Import CartItem
 import axios from "axios";
+import CheckoutPage from "./pages/CheckoutPage"; // Import CheckoutPage
 
 export function App() {
   const [cart, setCart] = useState<CartItem[]>(loadCartFromLocalStorage()); // Initialize with CartItem[]
@@ -90,42 +91,17 @@ export function App() {
   };
 
   const onCheckout = () => {
-    alert("Proceeding to checkout!");
+    // Navigate to checkout page
+    window.location.href = "/checkout";
   };
 
   return (
     <Router>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <Home
-              cart={cart}
-              addToCart={addToCart}
-              removeFromCart={removeFromCart}
-              clearCart={clearCart}
-            />
-          }
-        />
-        <Route
-          path="/shopping-cart"
-          element={
-            <ShoppingCartPage
-              cart={cart}
-              removeFromCart={removeFromCart}
-              onCheckout={onCheckout}
-            />
-          }
-        />
-        <Route
-          path="/product/:id"
-          element={
-            <ProductDetailPage
-              cart={cart}
-              addToCart={addToCart}
-            />
-          }
-        />
+        <Route path="/" element={<Home cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} clearCart={clearCart} />} />
+        <Route path="/shopping-cart" element={<ShoppingCartPage cart={cart} removeFromCart={removeFromCart} onCheckout={onCheckout} />} />
+        <Route path="/product/:id" element={<ProductDetailPage cart={cart} addToCart={addToCart} />} />
+        <Route path="/checkout" element={<CheckoutPage />} /> {/* Checkout Page route */}
       </Routes>
     </Router>
   );
