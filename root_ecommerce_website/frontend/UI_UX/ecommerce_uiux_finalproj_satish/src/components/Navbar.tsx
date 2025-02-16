@@ -1,26 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiShoppingCart, FiSearch } from "react-icons/fi";
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+import { Link } from "react-router-dom";
 import "./navbar.css";
 
-interface NavbarProps {
-  cartCount: number;
-  clearCart: () => void; // Add clearCart as a prop
-}
-
-const Navbar: React.FC<NavbarProps> = ({ cartCount, clearCart }) => {
+const Navbar: React.FC = () => {
+  const [cartCount, setCartCount] = useState(0);
   const [isSearchActive, setIsSearchActive] = useState(false);
 
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const response = await fetch("https://localhost:7120/api/ShoppingCart/satish");
+        if (!response.ok) {
+          throw new Error("Failed to fetch cart count");
+        }
+        const data = await response.json();
+        setCartCount(data.length); // Count total cart items
+      } catch (error) {
+        console.error("Error fetching cart count:", error);
+      }
+    };
+
+    fetchCartCount();
+
+    // Poll every 5 seconds to keep it updated
+    const interval = setInterval(fetchCartCount, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const toggleSearch = () => {
-    setIsSearchActive((prev) => !prev); // Toggle the search state
+    setIsSearchActive((prev) => !prev);
   };
 
   return (
     <nav className="navbar sticky-navbar">
-      {/* Logo Section */}
       <div className="navbar-logo">HamroEcommerce</div>
 
-      {/* Navigation Links */}
       <div className="navbar-links spaced">
         <a href="#">Home</a>
         <a href="#">Products</a>
@@ -28,17 +44,11 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, clearCart }) => {
         <a href="#">Contact</a>
       </div>
 
-      {/* Cart and Search Section */}
       <div className="navbar-actions">
-        {/* Use Link component to navigate to the shopping cart */}
         <Link to="/shopping-cart" className="cart-container" aria-label="Go to shopping cart">
           <FiShoppingCart className="icon" />
           <span className="cart-count">{cartCount}</span>
         </Link>
-
-        <button onClick={clearCart} className="clear-cart-btn">
-          Clear Cart
-        </button>
 
         <div className="search-container">
           <FiSearch className="icon" onClick={toggleSearch} />

@@ -165,10 +165,7 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
     return (
         <div className="w-full min-h-screen bg-slate-50">
             <AdBanner id="heading-banner" imageUrls={bannerImages} />
-            <Navbar
-                cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
-                clearCart={clearCart}
-            />
+            <Navbar />
             <main className="container mx-auto px-4 py-8">
                 <div className="flex gap-8">
                     {/* 
