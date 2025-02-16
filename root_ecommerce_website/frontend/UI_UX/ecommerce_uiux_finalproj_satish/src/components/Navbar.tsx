@@ -3,10 +3,20 @@ import { FiShoppingCart, FiSearch } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import "./navbar.css";
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  onSearch: (query: string) => void; // ✅ Prop for search
+}
+
+const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   const [cartCount, setCartCount] = useState(0);
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const userId = "satish"; // Hardcoded user ID (replace with auth logic)
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    onSearch(e.target.value); // ✅ Pass search query to Home.tsx
+  };
 
   useEffect(() => {
     const fetchCartCount = async () => {
@@ -67,6 +77,8 @@ const Navbar: React.FC = () => {
             type="text"
             placeholder={isSearchActive ? "Search" : ""}
             className={`search-input ${isSearchActive ? "active" : ""}`}
+            value={searchQuery}
+            onChange={handleSearchChange}
           />
         </div>
       </div>

@@ -40,6 +40,7 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
     const [selectedMaxPrice, setSelectedMaxPrice] = useState<number>(1000);
     const [visibleCategories, setVisibleCategories] = useState<Record<string, boolean>>({});
     const [showAllFeatured, setShowAllFeatured] = useState<boolean>(false);
+    const [searchQuery, setSearchQuery] = useState<string>(""); // ✅ New search state
 
     const bannerImages = [bannerImage1, bannerImage2, bannerImage3, bannerImage4];
 
@@ -74,11 +75,14 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
         return <div>{error}</div>;
     }
 
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
+    };
+
     // Filtering logic using the fetched allProducts
     const filteredProducts = allProducts.filter((product) => {
         const categoryName = product.category?.name ?? "";
         const brandName = product.brand?.name ?? "";
-
         const isCategorySelected =
             selectedCategories.includes("All") ||
             selectedCategories.some((cat) => cat.toLowerCase() === categoryName.toLowerCase());
@@ -89,9 +93,10 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
 
         const isPriceMatch = product.price >= selectedMinPrice && product.price <= selectedMaxPrice;
 
-        return isCategorySelected && isBrandSelected && isPriceMatch;
-    });
+        const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()); // ✅ Search applied
 
+        return isCategorySelected && isBrandSelected && isPriceMatch && matchesSearch;
+    });
 
     // Group filtered products by category for display
     const productsByCategory = filteredProducts.reduce((acc, product) => {
@@ -165,7 +170,7 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
     return (
         <div className="w-full min-h-screen bg-slate-50">
             <AdBanner id="heading-banner" imageUrls={bannerImages} />
-            <Navbar />
+            <Navbar onSearch={handleSearch} /> {/* ✅ Pass search function */}
             <main className="container mx-auto px-4 py-8">
                 <div className="flex gap-8">
                     {/* 
