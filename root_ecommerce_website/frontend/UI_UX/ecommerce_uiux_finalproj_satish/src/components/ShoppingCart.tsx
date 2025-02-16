@@ -14,13 +14,20 @@ interface Product {
   salePrice: number;
 }
 
+interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
 interface ShoppingCartProps {
-  cart: Product[];
-  removeFromCart: (productId: number, index: number) => void;
-  onCheckout: () => void; // Callback for Checkout action
+  cart: CartItem[];
+  removeFromCart: (productId: number) => void;
+  onCheckout: () => void;
 }
 
 const ShoppingCart: React.FC<ShoppingCartProps> = ({ cart, removeFromCart, onCheckout }) => {
+  const total = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+
   return (
     <div className="shopping-cart-container">
       <h1 className="text-center text-2xl font-bold">Shopping Cart</h1>
@@ -28,23 +35,26 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cart, removeFromCart, onChe
         <p>Your cart is empty.</p>
       ) : (
         <div className="cart-items">
-          {cart.map((product, index) => (
-            <div key={product.id} className="cart-item-card">
+          {cart.map((item) => (
+            <div key={item.product.id} className="cart-item-card">
               <div className="cart-item-details">
                 <img
-                  src={product.image}
-                  alt={product.name}
+                  src={item.product.image}
+                  alt={item.product.name}
                   className="cart-item-image"
                 />
                 <div className="cart-item-info">
-                  <h3 className="cart-item-name">{product.name}</h3>
-                  <p className="cart-item-description">{product.details}</p>
-                  <span className="cart-item-price">${product.price}</span>
+                  <h3 className="cart-item-name">{item.product.name}</h3>
+                  <p className="cart-item-description">{item.product.details}</p>
+                  <span className="cart-item-price">${item.product.price}</span>
+                  <div className="cart-item-quantity">
+                    Quantity: {item.quantity}
+                  </div>
                 </div>
               </div>
               <button
                 className="remove-item-btn"
-                onClick={() => removeFromCart(product.id, index)} // Pass both id and index
+                onClick={() => removeFromCart(item.product.id)}
               >
                 Remove
               </button>
@@ -53,7 +63,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ cart, removeFromCart, onChe
         </div>
       )}
       <div className="cart-summary">
-        <h2>Total: ${cart.reduce((total, product) => total + product.price, 0)}</h2>
+        <h2>Total: ${total}</h2>
       </div>
       <div className="checkout-container">
         <button className="checkout-btn" onClick={onCheckout}>

@@ -18,10 +18,15 @@ import {
 // import { totalCategoryData } from "../components/CategoryProductData/categoryData";
 import { Product } from "../components/ProductCard";
 
+export interface CartItem {
+    product: Product;
+    quantity: number;
+}
+
 interface HomeProps {
-    cart: Product[];
+    cart: CartItem[];
     addToCart: (product: Product) => void;
-    removeFromCart: (index: number) => void;
+    removeFromCart: (productId: number) => void;
     clearCart: () => void;
 }
 
@@ -129,12 +134,12 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
     }, {} as Record<string, Product[]>);
 
     // 3. Determine featured products from the filtered list.
-    const featuredProducts = filteredProducts.filter((product) => product.isFeatured);
+    const featuredProducts = allProducts.filter((product) => product.isFeatured);
 
     return (
         <div className="w-full min-h-screen bg-slate-50">
             <AdBanner id="heading-banner" imageUrls={images} />
-            <Navbar cartCount={cart.length} clearCart={clearCart} />
+            <Navbar cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} clearCart={clearCart} />
             <main className="container mx-auto px-4 py-8">
                 <div className="flex gap-8">
                     <Sidebar
@@ -166,7 +171,7 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
                             </div>
                         )}
 
-                        {Object.entries(productsByCategory).map(([category, products]) => (
+                        {Object.entries(productsByCategory).map(([category, products], index) => (
                             <div key={category}>
                                 <div className="mb-8">
                                     <div className="category-header">
@@ -182,6 +187,7 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
                                         addToCart={addToCart}
                                     />
                                 </div>
+                                {index % 2 === 1 && <AdBanner id={`ad-banner-${index}`} imageUrls={images} />}
                             </div>
                         ))}
                     </div>

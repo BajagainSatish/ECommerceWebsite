@@ -36,7 +36,7 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, clearCart }) => {
           <span className="cart-count">{cartCount}</span>
         </Link>
 
-                <button onClick={clearCart} className="clear-cart-btn">
+        <button onClick={clearCart} className="clear-cart-btn">
           Clear Cart
         </button>
 

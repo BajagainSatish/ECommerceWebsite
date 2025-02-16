@@ -10,9 +10,10 @@ import {
   loadCartFromLocalStorage,
   removeCartFromLocalStorage,
 } from "./components/CartStorage";
+import { CartItem } from './pages/Home'; // Import CartItem
 
 export function App() {
-  const [cart, setCart] = useState<Product[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(loadCartFromLocalStorage()); // Initialize with CartItem[]
 
   // Load cart from localStorage when the component mounts
   useEffect(() => {
@@ -24,21 +25,30 @@ export function App() {
   useEffect(() => {
     if (cart.length > 0) {
       saveCartToLocalStorage(cart);
+    } else {
+      removeCartFromLocalStorage();
     }
   }, [cart]);
 
-  // Function to add a product to the cart
+  // Add to cart: Merge quantities for existing products
   const addToCart = (product: Product) => {
-    setCart((prevCart) => [...prevCart, product]);
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((item) => item.product.id === product.id);
+      if (existingItem) {
+        return prevCart.map((item) =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        return [...prevCart, { product, quantity: 1 }];
+      }
+    });
   };
 
-  // Function to remove a product from the cart
-  const removeFromCart = (index: number) => {
-    setCart((prevCart) => {
-      const updatedCart = [...prevCart];
-      updatedCart.splice(index, 1);
-      return updatedCart;
-    });
+  // Remove from cart: Remove the entire product entry
+  const removeFromCart = (productId: number) => {
+    setCart((prevCart) => prevCart.filter((item) => item.product.id !== productId));
   };
 
   // Function to clear the cart and localStorage
