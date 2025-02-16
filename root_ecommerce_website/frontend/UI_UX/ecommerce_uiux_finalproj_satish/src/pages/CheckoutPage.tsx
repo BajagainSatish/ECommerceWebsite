@@ -3,7 +3,12 @@ import { useNavigate } from "react-router-dom";
 import './checkout.css'
 import axios from "axios";
 
-const CheckoutPage: React.FC = () => {
+interface CheckoutPageProps {
+    clearCart: () => void; // Add this interface
+}
+
+const CheckoutPage: React.FC<CheckoutPageProps> = ({ clearCart }) => { // Accept clearCart prop
+
     const [checkoutData, setCheckoutData] = useState<any>(null); // This will store the data from localStorage
     const [name, setName] = useState("");
     const [address, setAddress] = useState("");
@@ -38,21 +43,32 @@ const CheckoutPage: React.FC = () => {
         };
 
         try {
-            // Send the data to the backend API (POST request)
             const response = await axios.post("https://localhost:7120/api/orders", orderData);
 
             if (response.status === 201) {
+                // Clear backend cart
+                const userId = "satish";
+                try {
+                    const cartResponse = await axios.get(`https://localhost:7120/api/ShoppingCart/${userId}`);
+                    const cartItems = cartResponse.data;
+                    for (const item of cartItems) {
+                        await axios.delete(`https://localhost:7120/api/ShoppingCart/${item.id}`);
+                    }
+                } catch (error) {
+                    console.error("Error clearing backend cart:", error);
+                }
+
+                // Clear frontend cart
+                clearCart();
+
                 alert("Order confirmed successfully!");
-                navigate("/");  // Redirect to the home page after successful order
+                navigate("/");
             }
         } catch (error) {
             setError("Error placing the order. Please try again.");
         }
     };
 
-    const goBackToHome = () => {
-        navigate("/");  // Navigate back to Home page
-    };
 
     return (
         <div className="checkout-container">

@@ -101,7 +101,7 @@ export function App() {
         <Route path="/" element={<Home cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} clearCart={clearCart} />} />
         <Route path="/shopping-cart" element={<ShoppingCartPage cart={cart} removeFromCart={removeFromCart} onCheckout={onCheckout} />} />
         <Route path="/product/:id" element={<ProductDetailPage cart={cart} addToCart={addToCart} />} />
-        <Route path="/checkout" element={<CheckoutPage />} /> {/* Checkout Page route */}
+        <Route path="/checkout" element={<CheckoutPage clearCart={clearCart} />} />
       </Routes>
     </Router>
   );
