@@ -1,17 +1,17 @@
 import "./sideBar.css";
-import { totalCategoryData } from "./CategoryProductData/categoryData";
-import { totalBrandData } from "./CategoryProductData/brandData";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-interface SidebarProps {
+export interface SidebarProps {
   onCategoryChange: (category: string, isChecked: boolean) => void;
   selectedCategories: string[];
   onBrandChange: (brand: string, isChecked: boolean) => void;
   selectedBrands: string[];
   onReset: () => void;
-  onMinPriceChange: (price: number) => void;
-  onMaxPriceChange: (price: number) => void;
   selectedMinPrice: number;
   selectedMaxPrice: number;
+  onMinPriceChange: (price: number) => void;
+  onMaxPriceChange: (price: number) => void;
 }
 
 const Sidebar = ({
@@ -25,6 +25,33 @@ const Sidebar = ({
   selectedMinPrice,
   selectedMaxPrice,
 }: SidebarProps) => {
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
+
+  // Fetch categories and brands from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get("http://localhost:5285/api/categories");
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    const fetchBrands = async () => {
+      try {
+        const response = await axios.get("http://localhost:5285/api/brands");
+        setBrands(response.data);
+      } catch (error) {
+        console.error("Error fetching brands:", error);
+      }
+    };
+
+    fetchCategories();
+    fetchBrands();
+  }, []);
+
   const handleMinPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMin = Number(e.target.value);
     if (newMin <= selectedMaxPrice) {
@@ -58,7 +85,7 @@ const Sidebar = ({
               All
             </label>
 
-            {totalCategoryData.map((category) => (
+            {categories.map((category) => (
               <label key={category.id} className="flex items-center">
                 <input
                   type="checkbox"
@@ -72,7 +99,7 @@ const Sidebar = ({
           </div>
         </div>
 
-        {/* Price Range Section (Dual Slider) */}
+        {/* Price Range Section */}
         <div className="mb-6">
           <h3 className="font-medium mb-2 text-slate-700">Price Range</h3>
           <div className="space-y-2">
@@ -116,7 +143,7 @@ const Sidebar = ({
               All
             </label>
 
-            {totalBrandData.map((brand) => (
+            {brands.map((brand) => (
               <label key={brand.id} className="flex items-center">
                 <input
                   type="checkbox"

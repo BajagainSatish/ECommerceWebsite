@@ -7,8 +7,16 @@ export interface Product {
   id: number;
   name: string;
   image: string;
-  brand: string;
-  category: string;
+  brand: {
+    id: number;
+    name: string;
+    description?: string; // Optional field if available
+  };
+  category: {
+    id: number;
+    name: string;
+    description?: string; // Optional field if available
+  };
   stock: number;
   price: number;
   details: string;
@@ -16,6 +24,7 @@ export interface Product {
   inventoryValue: number;
   salePrice: number;
 }
+
 
 interface ProductCardProps {
   product: Product;

@@ -1,13 +1,9 @@
 // src/pages/ProductDetailPage.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Product } from "../components/ProductCard";
-import {
-    productsForCategoryWatches,
-    productsForCategoryClothing,
-    productsForCategoryBooks,
-} from "../components/CategoryProductData/productsData";
-import './productDetailPage.css'
+import "./productDetailPage.css";
 
 interface ProductDetailPageProps {
     cart: { product: Product; quantity: number }[];
@@ -18,21 +14,36 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ cart, addToCart }
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [product, setProduct] = useState<Product | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Combine all product arrays into one array
-        const productLists = [productsForCategoryWatches, productsForCategoryClothing, productsForCategoryBooks];
-        const allProducts = productLists.flat();
+        const fetchProduct = async () => {
+            if (!id) return;
+            setLoading(true);
+            setError(null);
 
-        // Ensure `id` is defined before using it
-        if (id) {
-            // Find the product with the matching ID
-            const foundProduct = allProducts.find((p) => p.id === parseInt(id));
-            if (foundProduct) {
-                setProduct(foundProduct);
+            try {
+                const response = await axios.get(`http://localhost:5285/api/products/${id}`);
+                setProduct(response.data);
+            } catch (err) {
+                console.error("Error fetching product:", err);
+                setError("Failed to load product details.");
+            } finally {
+                setLoading(false);
             }
-        }
+        };
+
+        fetchProduct();
     }, [id]);
+
+    if (loading) {
+        return <div>Loading product details...</div>;
+    }
+
+    if (error) {
+        return <div className="text-red-600">{error}</div>;
+    }
 
     if (!product) {
         return <div>Product not found</div>;
@@ -67,10 +78,10 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ cart, addToCart }
                     {/* Display all product information */}
                     <div className="space-y-4">
                         <p className="text-gray-700">
-                            <strong>Brand:</strong> {product.brand}
+                            <strong>Brand:</strong> {product.brand.name}
                         </p>
                         <p className="text-gray-700">
-                            <strong>Category:</strong> {product.category}
+                            <strong>Category:</strong> {product.category.name}
                         </p>
                         <p className="text-gray-700">
                             <strong>Stock:</strong> {product.stock}

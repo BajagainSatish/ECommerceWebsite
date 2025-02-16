@@ -1,6 +1,6 @@
 // src/pages/Home.tsx
-import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+// import axios from "axios";
 import AdBanner from "../components/AdBanner";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/SideBar";
@@ -10,12 +10,7 @@ import bannerImage1 from "../bannerimage1.jpg";
 import bannerImage2 from "../bannerimage2.jpg";
 import bannerImage3 from "../bannerimage3.jpg";
 import bannerImage4 from "../bannerimage4.png";
-import {
-    productsForCategoryWatches,
-    productsForCategoryClothing,
-    productsForCategoryBooks,
-} from "../components/CategoryProductData/productsData";
-// import { totalCategoryData } from "../components/CategoryProductData/categoryData";
+import { fetchBrands, fetchCategories, fetchProducts } from "../services/api";
 import { Product } from "../components/ProductCard";
 
 export interface CartItem {
@@ -31,35 +26,99 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
-    // const navigate = useNavigate();
+    // States for API data
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+    const [brands, setBrands] = useState<any[]>([]); // Adjust types as needed
+    const [categories, setCategories] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     // Filter states
     const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]);
     const [selectedBrands, setSelectedBrands] = useState<string[]>(["All"]);
-    // New dual price filter: starting min is 50 (changed left-hand limit) and max is 1000.
     const [selectedMinPrice, setSelectedMinPrice] = useState<number>(0);
     const [selectedMaxPrice, setSelectedMaxPrice] = useState<number>(1000);
-
     const [visibleCategories, setVisibleCategories] = useState<Record<string, boolean>>({});
     const [showAllFeatured, setShowAllFeatured] = useState<boolean>(false);
 
-    const images = [bannerImage1, bannerImage2, bannerImage3, bannerImage4];
+    const bannerImages = [bannerImage1, bannerImage2, bannerImage3, bannerImage4];
 
-    // Combine all product arrays into one array
-    const productLists = [productsForCategoryWatches, productsForCategoryClothing, productsForCategoryBooks];
-    const allProducts = productLists.flat();
+    // Fetch data from APIs on mount
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [productsData, brandsData, categoriesData] = await Promise.all([
+                    fetchProducts(),
+                    fetchBrands(),
+                    fetchCategories(),
+                ]);
+                setAllProducts(productsData);
+                setBrands(brandsData);
+                setCategories(categoriesData);
+            } catch (err) {
+                console.error(err);
+                setError("Failed to fetch data");
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    // Handlers for filter changes
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return <div>Loading data...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
+
+    // Filtering logic using the fetched allProducts
+    const filteredProducts = allProducts.filter((product) => {
+        const categoryName = product.category?.name ?? "";
+        const brandName = product.brand?.name ?? "";
+
+        const isCategorySelected =
+            selectedCategories.includes("All") ||
+            selectedCategories.some((cat) => cat.toLowerCase() === categoryName.toLowerCase());
+
+        const isBrandSelected =
+            selectedBrands.includes("All") ||
+            selectedBrands.some((b) => b.toLowerCase() === brandName.toLowerCase());
+
+        const isPriceMatch = product.price >= selectedMinPrice && product.price <= selectedMaxPrice;
+
+        return isCategorySelected && isBrandSelected && isPriceMatch;
+    });
+
+
+    // Group filtered products by category for display
+    const productsByCategory = filteredProducts.reduce((acc, product) => {
+        const categoryName = product.category?.name ?? "Uncategorized";
+
+        if (!acc[categoryName]) {
+            acc[categoryName] = [];
+        }
+
+        acc[categoryName].push(product);
+        return acc;
+    }, {} as Record<string, Product[]>);
+
+
+    // Determine featured products from the filtered list.
+    const featuredProducts = allProducts.filter((product) => product.isFeatured);
+
+    // Handler functions remain largely the same...
     const handleCategoryChange = (category: string, isChecked: boolean) => {
         setSelectedCategories((prev) => {
             if (category === "All") {
-                return isChecked ? ["All"] : []; // Reset to empty if "All" is unchecked
+                return isChecked ? ["All"] : [];
             } else {
                 let newSelection = isChecked
-                    ? [...prev.filter((c) => c !== "All"), category] // Add category, remove "All"
-                    : prev.filter((c) => c !== category); // Remove category
-
-                return newSelection.length > 0 ? newSelection : ["All"]; // Prevent empty selection
+                    ? [...prev.filter((c) => c !== "All"), category]
+                    : prev.filter((c) => c !== category);
+                return newSelection.length > 0 ? newSelection : ["All"];
             }
         });
     };
@@ -72,7 +131,6 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
                 let newSelection = isChecked
                     ? [...prev.filter((b) => b !== "All"), brand]
                     : prev.filter((b) => b !== brand);
-
                 return newSelection.length > 0 ? newSelection : ["All"];
             }
         });
@@ -104,44 +162,19 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
         setShowAllFeatured((prev) => !prev);
     };
 
-    // --- Linear filtering approach ---
-    // 1. Filter all products based on category, brand, and the price range.
-    const filteredProducts = allProducts.filter((product) => {
-        const isCategorySelected =
-            selectedCategories.includes("All") ||
-            selectedCategories.some(cat =>
-                cat.toLowerCase() === product.category.toLowerCase()
-            );
-
-        const isBrandSelected =
-            selectedBrands.includes("All") ||
-            selectedBrands.includes(product.brand);
-
-        const isPriceMatch =
-            product.price >= selectedMinPrice &&
-            product.price <= selectedMaxPrice;
-
-        return isCategorySelected && isBrandSelected && isPriceMatch;
-    });
-
-    // 2. Group filtered products by category for display.
-    const productsByCategory = filteredProducts.reduce((acc, product) => {
-        if (!acc[product.category]) {
-            acc[product.category] = [];
-        }
-        acc[product.category].push(product);
-        return acc;
-    }, {} as Record<string, Product[]>);
-
-    // 3. Determine featured products from the filtered list.
-    const featuredProducts = allProducts.filter((product) => product.isFeatured);
-
     return (
         <div className="w-full min-h-screen bg-slate-50">
-            <AdBanner id="heading-banner" imageUrls={images} />
-            <Navbar cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} clearCart={clearCart} />
+            <AdBanner id="heading-banner" imageUrls={bannerImages} />
+            <Navbar
+                cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
+                clearCart={clearCart}
+            />
             <main className="container mx-auto px-4 py-8">
                 <div className="flex gap-8">
+                    {/* 
+            Optionally, pass the fetched categories and brands to the Sidebar.
+            You may need to update the Sidebar component to display these dynamically.
+          */}
                     <Sidebar
                         onCategoryChange={handleCategoryChange}
                         selectedCategories={selectedCategories}
@@ -157,7 +190,9 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
                         {featuredProducts.length > 0 && (
                             <div className="mb-8">
                                 <div className="category-header">
-                                    <h1 className="text-2xl font-medium text-slate-800 mb-4">Featured Products:</h1>
+                                    <h1 className="text-2xl font-medium text-slate-800 mb-4">
+                                        Featured Products:
+                                    </h1>
                                     <button className="show-all-btn" onClick={toggleFeaturedVisibility}>
                                         {showAllFeatured ? "Hide All" : "Show All"}
                                     </button>
@@ -171,25 +206,26 @@ const Home: React.FC<HomeProps> = ({ cart, addToCart, clearCart }) => {
                             </div>
                         )}
 
-                        {Object.entries(productsByCategory).map(([category, products], index) => (
-                            <div key={category}>
+                        {Object.entries(productsByCategory).map(([categoryName, products], index) => (
+                            <div key={categoryName}>
                                 <div className="mb-8">
                                     <div className="category-header">
-                                        <h1 className="text-2xl font-medium text-slate-800">{category}</h1>
-                                        <button className="show-all-btn" onClick={() => toggleVisibility(category)}>
-                                            {visibleCategories[category] ? "Hide All" : "Show All"}
+                                        <h1 className="text-2xl font-medium text-slate-800">{categoryName}</h1>
+                                        <button className="show-all-btn" onClick={() => toggleVisibility(categoryName)}>
+                                            {visibleCategories[categoryName] ? "Hide All" : "Show All"}
                                         </button>
                                     </div>
                                     <ProductGrid
                                         productsByCategory={{
-                                            [category]: visibleCategories[category] ? products : products.slice(0, 5),
+                                            [categoryName]: visibleCategories[categoryName] ? products : products.slice(0, 5),
                                         }}
                                         addToCart={addToCart}
                                     />
                                 </div>
-                                {index % 2 === 1 && <AdBanner id={`ad-banner-${index}`} imageUrls={images} />}
+                                {index % 2 === 1 && <AdBanner id={`ad-banner-${index}`} imageUrls={bannerImages} />}
                             </div>
                         ))}
+
                     </div>
                 </div>
             </main>

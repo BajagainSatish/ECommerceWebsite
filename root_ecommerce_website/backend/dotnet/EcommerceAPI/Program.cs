@@ -10,7 +10,7 @@ builder.Services.AddCors(options =>
 					  policy =>
 					  {
 						  // Allow both HTTP and HTTPS for local development
-						  policy.WithOrigins("http://localhost:3000", "https://localhost:3000")
+						  policy.WithOrigins("http://localhost:3000", "https://localhost:3000", "https://localhost:5173", "http://localhost:5173")
 								.AllowAnyHeader()
 								.AllowAnyMethod();
 					  });
