@@ -36,10 +36,13 @@ namespace EcommerceAPI.Controllers
 			return order;
 		}
 
-		// POST: api/orders
+		// POST: api/Orders
 		[HttpPost]
-		public async Task<ActionResult<Order>> PostOrder(Order order)
+		public async Task<ActionResult<Order>> CreateOrder(Order order)
 		{
+			// Optional: Validate and process the order here
+
+			// Save the order in the database
 			_context.Orders.Add(order);
 			await _context.SaveChangesAsync();
 

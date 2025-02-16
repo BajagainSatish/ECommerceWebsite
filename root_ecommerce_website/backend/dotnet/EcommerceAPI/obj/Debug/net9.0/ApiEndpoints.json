@@ -239,7 +239,7 @@
   },
   {
     "ContainingType": "EcommerceAPI.Controllers.OrdersController",
-    "Method": "PostOrder",
+    "Method": "CreateOrder",
     "RelativePath": "api/Orders",
     "HttpMethod": "POST",
     "IsController": true,
