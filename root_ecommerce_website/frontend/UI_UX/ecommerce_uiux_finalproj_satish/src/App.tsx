@@ -12,6 +12,7 @@ import {
   removeCartFromLocalStorage,
 } from "./components/CartStorage";
 import { CartItem } from './pages/Home'; // Import CartItem
+import axios from "axios";
 
 export function App() {
   const [cart, setCart] = useState<CartItem[]>(loadCartFromLocalStorage()); // Initialize with CartItem[]
@@ -32,20 +33,43 @@ export function App() {
   }, [cart]);
 
   // Add to cart: Merge quantities for existing products
-  const addToCart = (product: Product) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.product.id === product.id);
-      if (existingItem) {
-        return prevCart.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+  const addToCart = async (product: Product) => {
+    const userId = "satish"; // Hardcoded user ID (replace with actual authentication logic)
+
+    try {
+      // Step 1: Check if the product already exists in the cart
+      const cartResponse = await axios.get(`https://localhost:7120/api/ShoppingCart/${userId}`);
+      const cartItems = cartResponse.data;
+
+      const existingCartItem = cartItems.find((item: any) => item.productId === product.id);
+
+      if (existingCartItem) {
+        // Step 2: If item exists, update the quantity using PUT request
+        const updatedCartItem = {
+          id: existingCartItem.id,
+          userId,
+          productId: product.id,
+          quantity: existingCartItem.quantity + 1, // Increment quantity
+        };
+
+        await axios.put(`https://localhost:7120/api/ShoppingCart/${existingCartItem.id}`, updatedCartItem);
+        console.log("Cart item updated successfully.");
       } else {
-        return [...prevCart, { product, quantity: 1 }];
+        // Step 3: If item doesn't exist, add it to the cart using POST request
+        const newCartItem = {
+          userId,
+          productId: product.id,
+          quantity: 1, // Default quantity
+        };
+
+        await axios.post("https://localhost:7120/api/ShoppingCart", newCartItem);
+        console.log("Cart item added successfully.");
       }
-    });
+    } catch (error) {
+      console.error("Error adding/updating cart item:", error);
+    }
   };
+
 
   // Remove from cart: Remove the entire product entry
   const removeFromCart = (productId: number) => {
