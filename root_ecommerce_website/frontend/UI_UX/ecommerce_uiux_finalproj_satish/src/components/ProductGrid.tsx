@@ -18,7 +18,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ productsByCategory, addToCart
       {Object.entries(productsByCategory).map(([category, products]) => (
         <div key={category} className="category-section">
           {/* <h2 className="category-title">{category}</h2> */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="custom-grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map((product) => (
               <ProductCard key={`${category}-${product.id}`} product={product} addToCart={addToCart} />
             ))}

@@ -40,7 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart }) => {
 
   return (
     <div
-      className="border border-slate-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 bg-white max-w-card cursor-pointer"
+      className="border border-slate-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 bg-white w-full cursor-pointer"
       onClick={handleCardClick}
     >
       <div className="aspect-square relative max-h-image max-w-image">
