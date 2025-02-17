@@ -60,9 +60,9 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ cart, addToCart }
             </button>
 
             {/* Product Details Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="flex flex-col md:flex-row gap-8">
                 {/* Product Image */}
-                <div>
+                <div className="flex-1">
                     <img
                         src={product.image}
                         alt={product.name}
@@ -71,7 +71,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ cart, addToCart }
                 </div>
 
                 {/* Product Information */}
-                <div>
+                <div className="flex-1">
                     <h1 className="text-3xl font-bold mb-4 text-slate-800">{product.name}</h1>
                     <p className="text-gray-700 mb-4">{product.details}</p>
 
