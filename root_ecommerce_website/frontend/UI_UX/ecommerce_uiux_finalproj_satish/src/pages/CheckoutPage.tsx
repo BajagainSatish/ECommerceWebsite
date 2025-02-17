@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import './checkout.css'
 import axios from "axios";
+import { CartItem } from "./Home";
 
 interface CheckoutPageProps {
     clearCart: () => void; // Add this interface
@@ -39,7 +40,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ clearCart }) => { // Accept
             Address: checkoutData.address,
             TotalAmount: checkoutData.totalAmount,
             PaymentStatus: checkoutData.paymentStatus,
-            CartItemsJson: checkoutData.cartItemsJson
+            CartItemsJson: JSON.stringify(checkoutData.cartItemsForOrder)
         };
 
         try {
@@ -104,6 +105,20 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ clearCart }) => { // Accept
                         Confirm Order
                     </button>
                 </form>
+            )}
+
+            {checkoutData && checkoutData.cartItems && (
+                <div className="cart-summary">
+                    <h3>Your Cart:</h3>
+                    <ul>
+                        {checkoutData.cartItems.map((item: CartItem, index: number) => (
+                            <li key={index}>
+                                {item.product.name} - {item.quantity} x ${item.product.price}
+                            </li>
+                        ))}
+                    </ul>
+                    <h3>Total: ${checkoutData.totalAmount}</h3>
+                </div>
             )}
 
             <button className="back-home-btn" onClick={() => navigate("/")}>

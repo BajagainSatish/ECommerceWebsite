@@ -30,7 +30,7 @@ export function App() {
     }
   }, [cart]);
 
-  // ✅ Updated addToCart function with better error handling
+  // Updated addToCart function with better error handling
   const addToCart = async (product: Product) => {
     const userId = "satish"; // Hardcoded user ID (replace with actual authentication logic)
 
@@ -41,7 +41,7 @@ export function App() {
         const cartResponse = await axios.get(`https://localhost:7120/api/ShoppingCart/${userId}`);
         cartItems = cartResponse.data;
       } catch (error: any) {
-        // ✅ If 404 is received, treat it as an empty cart
+        // If 404 is received, treat it as an empty cart
         if (error.response && error.response.status === 404) {
           console.warn("Cart is empty, initializing new cart.");
         } else {

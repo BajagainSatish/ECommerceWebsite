@@ -16,7 +16,7 @@ interface Product {
   salePrice: number;
 }
 
-interface CartItem {
+export interface CartItem {
   id: number;
   userId: string;
   productId: number;
@@ -90,26 +90,31 @@ const ShoppingCart: React.FC = () => {
   };
 
   const onCheckout = () => {
-    const cartItemsJson = JSON.stringify(cart.map(item => ({
+    const fullCart = cart; // full cart details for display
+    const simpleCart = cart.map(item => ({
       userId: item.userId,
       productId: item.productId,
       quantity: item.quantity,
-    })));
-
-    const totalAmount = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-
-    // Save the checkout data in localStorage for now (or pass via navigate state)
-    localStorage.setItem("checkoutData", JSON.stringify({
-      name: userId,  // assuming userId is a global variable or fetched from the user context
-      address: "Some address",  // you can fetch it from the CheckoutPage form input
-      totalAmount,
-      paymentStatus: "Pending",
-      cartItemsJson
     }));
 
-    // Navigate to the checkout page
+    const totalAmount = cart.reduce(
+      (sum, item) => sum + item.product.price * item.quantity,
+      0
+    );
+
+    const checkoutData = {
+      name: userId, // e.g., "satish"
+      address: "Some address",  // you might let the user update this later
+      totalAmount,
+      paymentStatus: "Pending",
+      cartItems: fullCart,           // for display
+      cartItemsForOrder: simpleCart, // for sending to the API
+    };
+
+    localStorage.setItem("checkoutData", JSON.stringify(checkoutData));
     window.location.href = "/checkout";
   };
+
 
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
