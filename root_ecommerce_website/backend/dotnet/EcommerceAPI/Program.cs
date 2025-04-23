@@ -16,7 +16,11 @@ builder.Services.AddCors(options =>
                       });
 });
 // Add OpenAPI support
-builder.Services.AddOpenApi();
+//builder.Services.AddOpenApi();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 // Add services to the container.
 builder.Services.AddControllers(); // Ensure this line exists
 builder.Services.AddEndpointsApiExplorer();
@@ -32,9 +36,14 @@ builder.Services.AddDbContext<EcommerceDbContext>(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+//if (app.Environment.IsDevelopment())
+//{
+//    app.MapOpenApi();
+//}
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+	app.UseSwagger();
+	app.UseSwaggerUI();
 }
 
 //app.UseHttpsRedirection();
